@@ -11,6 +11,7 @@ import '../controllers/game_controller.dart';
 import '../controllers/world_map_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/nexo_button.dart';
+import '../widgets/unity_game_banner.dart';
 
 class GameRouteArgs {
   const GameRouteArgs._({required this.level, this.worldMapController});
@@ -261,7 +262,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                const UnityGameBanner(),
+                const SizedBox(height: 6),
                 Row(
                   children: [
                     Expanded(

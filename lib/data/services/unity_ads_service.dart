@@ -6,6 +6,9 @@ class UnityAdsService {
 
   static const String androidGameId = '6050837';
   static const String iosGameId = '6050836';
+  static const String androidBannerPlacementId = 'Banner_Android';
+  static const String iosBannerPlacementId = 'Banner_iOS';
+  static bool get testMode => kDebugMode;
 
   static Future<void> initialize() async {
     if (kIsWeb) {
@@ -25,13 +28,27 @@ class UnityAdsService {
 
     await UnityAds.init(
       gameId: gameId,
-      testMode: false,
+      testMode: testMode,
       onComplete: () {
-        debugPrint('Unity Ads initialized for gameId=$gameId');
+        debugPrint(
+          'Unity Ads initialized for gameId=$gameId (testMode=$testMode)',
+        );
       },
       onFailed: (error, message) {
         debugPrint('Unity Ads init failed: $error - $message');
       },
     );
+  }
+
+  static String? bannerPlacementId() {
+    if (kIsWeb) {
+      return null;
+    }
+
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android => androidBannerPlacementId,
+      TargetPlatform.iOS => iosBannerPlacementId,
+      _ => null,
+    };
   }
 }
