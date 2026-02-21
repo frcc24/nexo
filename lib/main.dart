@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'data/services/unity_ads_service.dart';
 import 'presentation/controllers/world_map_controller.dart';
 import 'presentation/screens/difficulty_screen.dart';
 import 'presentation/screens/game_screen.dart';
@@ -8,8 +9,9 @@ import 'presentation/screens/more_games_screen.dart';
 import 'presentation/screens/world_map_screen.dart';
 import 'presentation/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await UnityAdsService.initialize();
   runApp(const NexoApp());
 }
 
