@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/cell_data.dart';
+import '../../localization/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 Future<void> showRulesModal(BuildContext context) {
@@ -17,6 +18,7 @@ class _RulesSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return FractionallySizedBox(
       heightFactor: 0.85,
       child: Container(
@@ -26,44 +28,43 @@ class _RulesSheet extends StatelessWidget {
         ),
         child: ListView(
           padding: const EdgeInsets.all(20),
-          children: const [
+          children: [
             Center(
               child: Text(
-                'COMO JOGAR',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                l10n.t('how_to_play'),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            SizedBox(height: 14),
+            const SizedBox(height: 14),
             _RuleSection(
-              title: 'Objetivo',
-              body:
-                  'Conecte todas as células em um único caminho visitando cada uma exatamente uma vez.',
+              title: l10n.t('objective'),
+              body: l10n.t('objective_body'),
             ),
             _RuleSection(
-              title: 'Regra 1: Mesma Cor',
-              body:
-                  'Se as cores forem iguais, os números devem diferir por exatamente 1.',
-              example: _RuleExample(
+              title: l10n.t('rule_same_color'),
+              body: l10n.t('rule_same_color_body'),
+              example: const _RuleExample(
                 left: _BoxData(value: 2, color: CellColor.blue),
                 right: _BoxData(value: 3, color: CellColor.blue),
                 isValid: true,
               ),
             ),
             _RuleSection(
-              title: 'Regra 2: Cor Diferente',
-              body:
-                  'Se as cores forem diferentes, os números devem ser iguais.',
-              example: _RuleExample(
+              title: l10n.t('rule_diff_color'),
+              body: l10n.t('rule_diff_color_body'),
+              example: const _RuleExample(
                 left: _BoxData(value: 3, color: CellColor.blue),
                 right: _BoxData(value: 3, color: CellColor.red),
                 isValid: true,
               ),
             ),
             _RuleSection(
-              title: 'Movimento Inválido',
-              body:
-                  'Movimentos diagonais, repetidos ou que violem as regras são rejeitados.',
-              example: _RuleExample(
+              title: l10n.t('invalid_move'),
+              body: l10n.t('invalid_move_body'),
+              example: const _RuleExample(
                 left: _BoxData(value: 2, color: CellColor.red),
                 right: _BoxData(value: 4, color: CellColor.blue),
                 isValid: false,

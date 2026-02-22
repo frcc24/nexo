@@ -7,6 +7,7 @@ import '../../domain/entities/cell_data.dart';
 import '../../domain/entities/level.dart';
 import '../../domain/entities/position.dart';
 import '../../domain/services/level_generator.dart';
+import '../../localization/app_localizations.dart';
 import '../controllers/game_controller.dart';
 import '../controllers/world_map_controller.dart';
 import '../theme/app_theme.dart';
@@ -84,6 +85,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _handleWin() async {
+    final l10n = context.l10n;
     if (widget.args.hasProgression) {
       await widget.args.worldMapController!.completeLevel(
         level: _controller.level,
@@ -99,16 +101,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppTheme.surface,
-          title: const Text('Fase concluída!'),
+          title: Text(l10n.t('stage_done')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Estrelas: ${'★' * _controller.stars}${'☆' * (3 - _controller.stars)}',
+                '${l10n.t('stars')}: ${'★' * _controller.stars}${'☆' * (3 - _controller.stars)}',
               ),
               const SizedBox(height: 12),
               Text(
-                'Caminho completo: ${_controller.visitedCount}/${_controller.totalCount}',
+                '${l10n.t('path_complete')}: ${_controller.visitedCount}/${_controller.totalCount}',
               ),
             ],
           ),
@@ -118,14 +120,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: const Text('Mapa'),
+              child: Text(l10n.t('map')),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(context);
                 _openNextLevel();
               },
-              child: const Text('Próxima fase'),
+              child: Text(l10n.t('next_level')),
             ),
           ],
         );
@@ -191,8 +193,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final level = _controller.level;
-    final title = 'NEXO · ${level.difficulty.title}';
+    final difficultyLabel = switch (level.difficulty) {
+      Difficulty.easy => l10n.t('easy'),
+      Difficulty.medium => l10n.t('medium'),
+      Difficulty.hard => l10n.t('hard'),
+    };
+    final title = '${l10n.t('app_title')} · $difficultyLabel';
 
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent, title: Text(title)),
@@ -237,9 +245,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            'Você saiu da rota. Próximo passo correto: '
-                            '(${_controller.hintExpectedCell!.row + 1}, '
-                            '${_controller.hintExpectedCell!.col + 1})',
+                            '${l10n.t('route_error_title')} '
+                            '${l10n.routeErrorNext(row: _controller.hintExpectedCell!.row + 1, col: _controller.hintExpectedCell!.col + 1)}',
                             style: const TextStyle(
                               color: Color(0xFFFFB2B6),
                               fontSize: 12,
@@ -299,7 +306,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   children: [
                     Expanded(
                       child: NexoButton(
-                        label: 'Dica',
+                        label: l10n.t('hint'),
                         icon: Icons.lightbulb_outline,
                         primary: true,
                         onPressed: _controller.isComplete
@@ -312,7 +319,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     const SizedBox(width: 10),
                     Expanded(
                       child: NexoButton(
-                        label: 'Desfazer',
+                        label: l10n.t('undo'),
                         icon: Icons.undo,
                         primary: false,
                         onPressed: _controller.canUndo
@@ -323,7 +330,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     const SizedBox(width: 10),
                     Expanded(
                       child: NexoButton(
-                        label: 'Reiniciar',
+                        label: l10n.t('restart'),
                         icon: Icons.refresh,
                         primary: false,
                         onPressed: _controller.hasStarted

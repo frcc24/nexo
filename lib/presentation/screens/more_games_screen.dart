@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../domain/entities/more_game.dart';
+import '../../localization/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 const List<MoreGame> moreGamesCatalog = <MoreGame>[
@@ -34,16 +35,17 @@ class MoreGamesScreen extends StatelessWidget {
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível abrir a loja agora.')),
+        SnackBar(content: Text(context.l10n.t('store_open_error'))),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mais Jogos'),
+        title: Text(l10n.t('more_games')),
         backgroundColor: Colors.transparent,
       ),
       body: NexoBackground(
@@ -85,9 +87,9 @@ class MoreGamesScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Conheça este jogo e instale pela loja:',
-                      style: TextStyle(
+                    Text(
+                      l10n.t('more_games_subtitle'),
+                      style: const TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 13,
                       ),
@@ -116,11 +118,11 @@ class MoreGamesScreen extends StatelessWidget {
                       ],
                     ),
                     if (game.iosStoreUri == null)
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(top: 8),
                         child: Text(
-                          'App Store em breve.',
-                          style: TextStyle(color: AppTheme.textSecondary),
+                          l10n.t('app_store_soon'),
+                          style: const TextStyle(color: AppTheme.textSecondary),
                         ),
                       ),
                   ],

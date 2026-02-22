@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'data/services/unity_ads_service.dart';
+import 'localization/app_localizations.dart';
+import 'presentation/controllers/locale_controller.dart';
 import 'presentation/controllers/world_map_controller.dart';
 import 'presentation/screens/difficulty_screen.dart';
 import 'presentation/screens/game_screen.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/legal_screen.dart';
 import 'presentation/screens/more_games_screen.dart';
+import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/world_map_screen.dart';
 import 'presentation/theme/app_theme.dart';
 
@@ -25,6 +29,26 @@ class NexoApp extends StatefulWidget {
 
 class _NexoAppState extends State<NexoApp> {
   final WorldMapController _worldMapController = WorldMapController();
+  final LocaleController _localeController = LocaleController();
+
+  @override
+  void initState() {
+    super.initState();
+    _localeController.addListener(_onLocaleChanged);
+    _localeController.init();
+  }
+
+  @override
+  void dispose() {
+    _localeController.removeListener(_onLocaleChanged);
+    super.dispose();
+  }
+
+  void _onLocaleChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +56,32 @@ class _NexoAppState extends State<NexoApp> {
       title: 'NEXO',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.buildTheme(),
+      locale: _localeController.locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
+        if (deviceLocale == null) {
+          return const Locale('en');
+        }
+        for (final locale in supportedLocales) {
+          if (locale.languageCode == deviceLocale.languageCode) {
+            return locale;
+          }
+        }
+        return const Locale('en');
+      },
       routes: {
         HomeScreen.routeName: (_) => const HomeScreen(),
         DifficultyScreen.routeName: (_) => const DifficultyScreen(),
         LegalScreen.routeName: (_) => const LegalScreen(),
         MoreGamesScreen.routeName: (_) => const MoreGamesScreen(),
+        SettingsScreen.routeName: (_) =>
+            SettingsScreen(localeController: _localeController),
         WorldMapScreen.routeName: (_) =>
             WorldMapScreen(controller: _worldMapController),
       },

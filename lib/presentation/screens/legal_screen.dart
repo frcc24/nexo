@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../localization/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class LegalScreen extends StatelessWidget {
@@ -9,38 +10,30 @@ class LegalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Termos e Privacidade'),
+        title: Text(l10n.t('terms_title')),
         backgroundColor: Colors.transparent,
       ),
       body: NexoBackground(
         child: SafeArea(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            children: const [
+            children: [
               _LegalCard(
-                title: 'Termos de Uso',
-                body:
-                    'Ao utilizar o NEXO, você concorda em usar o aplicativo apenas para fins pessoais e lícitos. '
-                    'O aplicativo é fornecido no estado em que se encontra, sem garantias de disponibilidade contínua. '
-                    'Podemos atualizar recursos, corrigir falhas e ajustar conteúdos a qualquer momento.',
+                title: l10n.t('terms_use'),
+                body: l10n.t('terms_use_body'),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               _LegalCard(
-                title: 'Aviso de Privacidade',
-                body:
-                    'O NEXO funciona offline e não exige cadastro. Dados de progresso (fases, estrelas e desbloqueios) '
-                    'são armazenados localmente no seu dispositivo. Este app usa anúncios (Unity Ads) e pode coletar '
-                    'identificadores de dispositivo e dados técnicos para entrega, limitação de frequência e medição dos anúncios, '
-                    'conforme as políticas do provedor de anúncios e das lojas.',
+                title: l10n.t('privacy_notice'),
+                body: l10n.t('privacy_notice_body'),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               _LegalCard(
-                title: 'Contato',
-                body:
-                    'Para dúvidas sobre estes termos ou privacidade, utilize os canais oficiais do desenvolvedor '
-                    'informados na loja do aplicativo.',
+                title: l10n.t('contact'),
+                body: l10n.t('contact_body'),
               ),
             ],
           ),

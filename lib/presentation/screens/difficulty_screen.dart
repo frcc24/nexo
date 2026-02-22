@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/entities/level.dart';
 import '../../domain/services/level_generator.dart';
+import '../../localization/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'game_screen.dart';
 
@@ -12,6 +13,7 @@ class DifficultyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final generator = LevelGenerator();
 
     return Scaffold(
@@ -22,11 +24,11 @@ class DifficultyScreen extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 28),
-                const NexoTitle(),
+                NexoTitle(subtitle: l10n.t('subtitle')),
                 const SizedBox(height: 26),
-                const Text(
-                  'Escolha a dificuldade',
-                  style: TextStyle(color: AppTheme.textSecondary),
+                Text(
+                  l10n.t('choose_difficulty'),
+                  style: const TextStyle(color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 20),
                 ...Difficulty.values.map(
@@ -52,9 +54,9 @@ class DifficultyScreen extends StatelessWidget {
                 const Spacer(),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Voltar',
-                    style: TextStyle(color: Colors.white),
+                  child: Text(
+                    l10n.t('back'),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -74,6 +76,12 @@ class _DifficultyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final difficultyLabel = switch (difficulty) {
+      Difficulty.easy => l10n.t('easy'),
+      Difficulty.medium => l10n.t('medium'),
+      Difficulty.hard => l10n.t('hard'),
+    };
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -87,7 +95,7 @@ class _DifficultyCard extends StatelessWidget {
           children: [
             Text(difficulty.icon, style: const TextStyle(fontSize: 18)),
             const SizedBox(width: 12),
-            Text(difficulty.title),
+            Text(difficultyLabel),
             const Spacer(),
             Text(
               '${difficulty.size}x${difficulty.size}',

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../localization/app_localizations.dart';
+import '../../domain/entities/level.dart';
 import '../controllers/world_map_controller.dart';
 import '../theme/app_theme.dart';
 import 'game_screen.dart';
@@ -46,7 +48,7 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Mapa de Mundos'),
+        title: Text(context.l10n.t('world_map')),
         actions: [
           IconButton(
             onPressed: () => Navigator.pushNamed(context, '/difficulty'),
@@ -59,8 +61,14 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 28),
           itemCount: WorldMapController.totalWorlds,
           itemBuilder: (context, worldOffset) {
+            final l10n = context.l10n;
             final world = worldOffset + 1;
             final difficulty = widget.controller.difficultyForWorld(world);
+            final difficultyLabel = switch (difficulty) {
+              Difficulty.easy => l10n.t('easy'),
+              Difficulty.medium => l10n.t('medium'),
+              Difficulty.hard => l10n.t('hard'),
+            };
 
             return Container(
               margin: const EdgeInsets.only(bottom: 26),
@@ -73,7 +81,7 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Mundo $world · ${difficulty.title}',
+                    '${l10n.t('world')} $world · $difficultyLabel',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,

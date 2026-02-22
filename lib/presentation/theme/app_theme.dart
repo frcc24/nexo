@@ -57,7 +57,9 @@ class NexoBackground extends StatelessWidget {
 }
 
 class NexoTitle extends StatelessWidget {
-  const NexoTitle({super.key});
+  const NexoTitle({super.key, this.subtitle = 'CONEXÕES LÓGICAS'});
+
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -77,10 +79,7 @@ class NexoTitle extends StatelessWidget {
             ).textTheme.headlineLarge?.copyWith(color: Colors.white, height: 1),
           ),
           const SizedBox(height: 8),
-          Text(
-            'CONEXÕES LÓGICAS',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text(subtitle, style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
     );
