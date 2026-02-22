@@ -31,8 +31,9 @@ class LegalScreen extends StatelessWidget {
                 title: 'Aviso de Privacidade',
                 body:
                     'O NEXO funciona offline e não exige cadastro. Dados de progresso (fases, estrelas e desbloqueios) '
-                    'são armazenados localmente no seu dispositivo. O app pode exibir anúncios via provedores externos '
-                    'que podem usar identificadores do dispositivo conforme políticas dessas plataformas.',
+                    'são armazenados localmente no seu dispositivo. Este app usa anúncios (Unity Ads) e pode coletar '
+                    'identificadores de dispositivo e dados técnicos para entrega, limitação de frequência e medição dos anúncios, '
+                    'conforme as políticas do provedor de anúncios e das lojas.',
               ),
               SizedBox(height: 12),
               _LegalCard(
