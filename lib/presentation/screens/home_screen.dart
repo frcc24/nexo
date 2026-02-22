@@ -41,6 +41,13 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () => Navigator.pushNamed(context, '/more-games'),
                 ),
                 const SizedBox(height: 14),
+                NexoButton(
+                  label: 'TERMOS E PRIVACIDADE',
+                  icon: Icons.privacy_tip_outlined,
+                  primary: false,
+                  onPressed: () => Navigator.pushNamed(context, '/legal'),
+                ),
+                const SizedBox(height: 14),
                 TextButton(
                   onPressed: () => Navigator.pushNamed(context, '/difficulty'),
                   child: const Text('Modo rápido (dificuldade)'),

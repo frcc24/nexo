@@ -5,6 +5,7 @@ import 'presentation/controllers/world_map_controller.dart';
 import 'presentation/screens/difficulty_screen.dart';
 import 'presentation/screens/game_screen.dart';
 import 'presentation/screens/home_screen.dart';
+import 'presentation/screens/legal_screen.dart';
 import 'presentation/screens/more_games_screen.dart';
 import 'presentation/screens/world_map_screen.dart';
 import 'presentation/theme/app_theme.dart';
@@ -34,6 +35,7 @@ class _NexoAppState extends State<NexoApp> {
       routes: {
         HomeScreen.routeName: (_) => const HomeScreen(),
         DifficultyScreen.routeName: (_) => const DifficultyScreen(),
+        LegalScreen.routeName: (_) => const LegalScreen(),
         MoreGamesScreen.routeName: (_) => const MoreGamesScreen(),
         WorldMapScreen.routeName: (_) =>
             WorldMapScreen(controller: _worldMapController),
