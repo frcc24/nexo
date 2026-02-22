@@ -4,8 +4,8 @@ import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 class UnityAdsService {
   UnityAdsService._();
 
-  static const String androidGameId = '6050837';
-  static const String iosGameId = '6050836';
+  static const String androidGameId = '6050838';
+  static const String iosGameId = '6050839';
   static const String androidBannerPlacementId = 'Banner_Android';
   static const String iosBannerPlacementId = 'Banner_iOS';
   static bool get testMode => kDebugMode;

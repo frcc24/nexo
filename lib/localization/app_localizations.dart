@@ -67,6 +67,13 @@ class AppLocalizations {
       'language_en': 'English',
       'language_es': 'Spanish',
       'choose_language': 'Choose app language',
+      'remove_ads': 'Remove ads',
+      'remove_ads_for': 'Remove ads for {price}',
+      'ads_removed_active': 'Ads are disabled for this app.',
+      'buy': 'Buy',
+      'processing': 'Processing...',
+      'restore_purchases': 'Restore purchases',
+      'purchase_error_short': 'Could not complete purchase. Try again.',
       'route_error_title': 'You left the correct route.',
       'route_error_next': 'Next correct step: ({row}, {col})',
       'how_to_play': 'HOW TO PLAY',
@@ -124,6 +131,14 @@ class AppLocalizations {
       'language_en': 'Inglês',
       'language_es': 'Espanhol',
       'choose_language': 'Escolha o idioma do app',
+      'remove_ads': 'Remover anúncios',
+      'remove_ads_for': 'Remover anúncios por {price}',
+      'ads_removed_active': 'Anúncios desativados neste app.',
+      'buy': 'Comprar',
+      'processing': 'Processando...',
+      'restore_purchases': 'Restaurar compras',
+      'purchase_error_short':
+          'Não foi possível concluir a compra. Tente novamente.',
       'route_error_title': 'Você saiu da rota correta.',
       'route_error_next': 'Próximo passo correto: ({row}, {col})',
       'how_to_play': 'COMO JOGAR',
@@ -182,6 +197,14 @@ class AppLocalizations {
       'language_en': 'Inglés',
       'language_es': 'Español',
       'choose_language': 'Elige el idioma de la app',
+      'remove_ads': 'Eliminar anuncios',
+      'remove_ads_for': 'Eliminar anuncios por {price}',
+      'ads_removed_active': 'Los anuncios están desactivados en esta app.',
+      'buy': 'Comprar',
+      'processing': 'Procesando...',
+      'restore_purchases': 'Restaurar compras',
+      'purchase_error_short':
+          'No se pudo completar la compra. Inténtalo de nuevo.',
       'route_error_title': 'Saliste de la ruta correcta.',
       'route_error_next': 'Siguiente paso correcto: ({row}, {col})',
       'how_to_play': 'CÓMO JUGAR',
@@ -210,6 +233,10 @@ class AppLocalizations {
     return t(
       'route_error_next',
     ).replaceFirst('{row}', '$row').replaceFirst('{col}', '$col');
+  }
+
+  String removeAdsFor({required String price}) {
+    return t('remove_ads_for').replaceFirst('{price}', price);
   }
 }
 

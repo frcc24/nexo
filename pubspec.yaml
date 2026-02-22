@@ -37,6 +37,7 @@ dependencies:
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.1
   unity_ads_plugin: ^0.3.29
+  in_app_purchase: ^3.2.0
 
 dev_dependencies:
   flutter_test:

@@ -22,20 +22,9 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Align(
                   alignment: Alignment.centerRight,
-                  child: PopupMenuButton<String>(
-                    icon: const Icon(Icons.menu),
-                    color: AppTheme.surface,
-                    onSelected: (value) {
-                      if (value == 'settings') {
-                        Navigator.pushNamed(context, '/settings');
-                      }
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem<String>(
-                        value: 'settings',
-                        child: Text(l10n.t('settings')),
-                      ),
-                    ],
+                  child: IconButton(
+                    onPressed: () => Navigator.pushNamed(context, '/settings'),
+                    icon: const Icon(Icons.settings_outlined),
                   ),
                 ),
                 const Spacer(),

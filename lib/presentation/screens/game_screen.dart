@@ -9,6 +9,7 @@ import '../../domain/entities/position.dart';
 import '../../domain/services/level_generator.dart';
 import '../../localization/app_localizations.dart';
 import '../controllers/game_controller.dart';
+import '../controllers/purchase_controller.dart';
 import '../controllers/world_map_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/nexo_button.dart';
@@ -32,11 +33,16 @@ class GameRouteArgs {
 }
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.args});
+  const GameScreen({
+    super.key,
+    required this.args,
+    required this.purchaseController,
+  });
 
   static const routeName = '/game';
 
   final GameRouteArgs args;
+  final PurchaseController purchaseController;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -53,6 +59,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     super.initState();
     _controller = GameController(level: widget.args.level);
     _controller.addListener(_onGameUpdated);
+    widget.purchaseController.addListener(_onPurchaseChanged);
 
     _shakeController = AnimationController(
       vsync: this,
@@ -67,10 +74,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _controller.removeListener(_onGameUpdated);
+    widget.purchaseController.removeListener(_onPurchaseChanged);
     _controller.dispose();
     _shakeController.dispose();
     _hintPulseController.dispose();
     super.dispose();
+  }
+
+  void _onPurchaseChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _onGameUpdated() {
@@ -300,7 +314,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const UnityGameBanner(),
+                if (!widget.purchaseController.hasRemovedAds)
+                  const UnityGameBanner(),
                 const SizedBox(height: 6),
                 Row(
                   children: [
