@@ -223,6 +223,33 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+                if (_controller.hintFeedbackVisible &&
+                    _controller.hintExpectedCell != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          size: 16,
+                          color: Color(0xFFFF7C82),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Você saiu da rota. Próximo passo correto: '
+                            '(${_controller.hintExpectedCell!.row + 1}, '
+                            '${_controller.hintExpectedCell!.col + 1})',
+                            style: const TextStyle(
+                              color: Color(0xFFFFB2B6),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 Expanded(
                   child: Center(
@@ -254,6 +281,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                               controller: _controller,
                               onCellTap: _handleCellTap,
                               hintedCells: _controller.nextHints,
+                              hintPath: _controller.activeHint,
+                              wrongCell: _controller.hintWrongCell,
+                              expectedCell: _controller.hintExpectedCell,
                               hintPulse: _hintPulseController.value,
                             ),
                           ),
@@ -267,6 +297,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 const SizedBox(height: 6),
                 Row(
                   children: [
+                    Expanded(
+                      child: NexoButton(
+                        label: 'Dica',
+                        icon: Icons.lightbulb_outline,
+                        primary: true,
+                        onPressed: _controller.isComplete
+                            ? null
+                            : () {
+                                _controller.showHint();
+                              },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: NexoButton(
                         label: 'Desfazer',
@@ -304,12 +347,18 @@ class _Board extends StatelessWidget {
     required this.controller,
     required this.onCellTap,
     required this.hintedCells,
+    required this.hintPath,
+    required this.wrongCell,
+    required this.expectedCell,
     required this.hintPulse,
   });
 
   final GameController controller;
   final ValueChanged<GridPosition> onCellTap;
   final Set<GridPosition> hintedCells;
+  final List<GridPosition> hintPath;
+  final GridPosition? wrongCell;
+  final GridPosition? expectedCell;
   final double hintPulse;
 
   @override
@@ -327,9 +376,20 @@ class _Board extends StatelessWidget {
               size: Size(constraints.maxWidth, constraints.maxHeight),
               painter: _PathPainter(
                 path: controller.path,
-                boardSize: size,
                 cellSize: cellSize,
                 spacing: spacing,
+                color: Colors.white.withValues(alpha: 0.78),
+                strokeWidth: 6,
+              ),
+            ),
+            CustomPaint(
+              size: Size(constraints.maxWidth, constraints.maxHeight),
+              painter: _PathPainter(
+                path: hintPath,
+                cellSize: cellSize,
+                spacing: spacing,
+                color: const Color(0xFF53F0CC).withValues(alpha: 0.75),
+                strokeWidth: 4,
               ),
             ),
             ...List.generate(size * size, (index) {
@@ -339,6 +399,9 @@ class _Board extends StatelessWidget {
               final cell = controller.level.grid[row][col];
               final selected = controller.path.contains(pos);
               final hinted = hintedCells.contains(pos);
+              final inHintPath = hintPath.contains(pos);
+              final isWrong = wrongCell == pos;
+              final isExpected = expectedCell == pos;
               final t = Curves.easeInOut.transform(hintPulse);
               final hintAlpha = 0.14 + (0.2 * t);
 
@@ -355,12 +418,32 @@ class _Board extends StatelessWidget {
                       color: cell.color.color,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: selected || hinted
+                        color: isWrong
+                            ? const Color(0xFFFF656B)
+                            : isExpected
+                            ? const Color(
+                                0xFF53F0CC,
+                              ).withValues(alpha: 0.75 + (0.2 * t))
+                            : selected || hinted
                             ? Colors.white.withValues(
                                 alpha: selected ? 0.95 : (0.45 + t * 0.3),
                               )
+                            : inHintPath
+                            ? const Color(
+                                0xFF53F0CC,
+                              ).withValues(alpha: 0.58 + (0.3 * t))
                             : Colors.transparent,
-                        width: selected ? 2.4 : (hinted ? (1.8 + t * 0.6) : 0),
+                        width: isWrong
+                            ? 2.6
+                            : isExpected
+                            ? (2 + t * 0.6)
+                            : selected
+                            ? 2.4
+                            : hinted
+                            ? (1.8 + t * 0.6)
+                            : inHintPath
+                            ? (1.6 + t * 0.5)
+                            : 0,
                       ),
                       boxShadow: [
                         if (selected)
@@ -372,6 +455,33 @@ class _Board extends StatelessWidget {
                         if (hinted)
                           BoxShadow(
                             color: Colors.white.withValues(alpha: hintAlpha),
+                            blurRadius: 16,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 0),
+                          ),
+                        if (inHintPath)
+                          BoxShadow(
+                            color: const Color(
+                              0xFF53F0CC,
+                            ).withValues(alpha: 0.2 + (0.2 * t)),
+                            blurRadius: 16,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 0),
+                          ),
+                        if (isWrong)
+                          BoxShadow(
+                            color: const Color(
+                              0xFFFF656B,
+                            ).withValues(alpha: 0.35),
+                            blurRadius: 16,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 0),
+                          ),
+                        if (isExpected)
+                          BoxShadow(
+                            color: const Color(
+                              0xFF53F0CC,
+                            ).withValues(alpha: 0.22 + (0.25 * t)),
                             blurRadius: 16,
                             spreadRadius: 1,
                             offset: const Offset(0, 0),
@@ -402,15 +512,17 @@ class _Board extends StatelessWidget {
 class _PathPainter extends CustomPainter {
   const _PathPainter({
     required this.path,
-    required this.boardSize,
     required this.cellSize,
     required this.spacing,
+    required this.color,
+    required this.strokeWidth,
   });
 
   final List<GridPosition> path;
-  final int boardSize;
   final double cellSize;
   final double spacing;
+  final Color color;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -420,9 +532,9 @@ class _PathPainter extends CustomPainter {
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
-      ..color = Colors.white.withValues(alpha: 0.75);
+      ..color = color;
 
     for (var i = 0; i < path.length - 1; i++) {
       final from = _center(path[i]);
@@ -440,8 +552,9 @@ class _PathPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _PathPainter oldDelegate) {
     return oldDelegate.path != path ||
-        oldDelegate.boardSize != boardSize ||
         oldDelegate.cellSize != cellSize ||
-        oldDelegate.spacing != spacing;
+        oldDelegate.spacing != spacing ||
+        oldDelegate.color != color ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }

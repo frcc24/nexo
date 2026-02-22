@@ -14,6 +14,10 @@ class GameController extends ChangeNotifier {
   final GameRules _rules;
 
   final List<GridPosition> _path = [];
+  List<GridPosition> _activeHint = const [];
+  GridPosition? _hintWrongCell;
+  GridPosition? _hintExpectedCell;
+  bool _hintFeedbackVisible = false;
   bool _usedUndo = false;
   bool _usedRestart = false;
 
@@ -26,6 +30,28 @@ class GameController extends ChangeNotifier {
   bool get usedUndo => _usedUndo;
   bool get usedRestart => _usedRestart;
   double get progress => _path.isEmpty ? 0 : _path.length / level.totalCells;
+  List<GridPosition> get activeHint => List.unmodifiable(_activeHint);
+  bool get hintFeedbackVisible => _hintFeedbackVisible;
+  GridPosition? get hintWrongCell =>
+      _hintFeedbackVisible ? _hintWrongCell : null;
+  GridPosition? get hintExpectedCell =>
+      _hintFeedbackVisible ? _hintExpectedCell : null;
+  int get correctPrefixLength => _computeCorrectPrefixLength();
+  bool get hasRouteError => _path.length > correctPrefixLength;
+  GridPosition? get firstWrongCell =>
+      hasRouteError ? _path[correctPrefixLength] : null;
+  GridPosition? get expectedNextCorrectCell {
+    final solution = level.solutionPath;
+    if (solution.isEmpty) {
+      return null;
+    }
+    final nextIndex = correctPrefixLength;
+    if (nextIndex >= solution.length) {
+      return null;
+    }
+    return solution[nextIndex];
+  }
+
   Set<GridPosition> get nextHints {
     if (_path.isEmpty) {
       return <GridPosition>{};
@@ -67,12 +93,14 @@ class GameController extends ChangeNotifier {
   MoveResult trySelect(GridPosition position) {
     if (_path.isEmpty) {
       _path.add(position);
+      _clearHintFeedback();
       notifyListeners();
       return MoveResult.started;
     }
 
     if (_path.length > 1 && _path[_path.length - 2] == position) {
       _path.removeLast();
+      _clearHintFeedback();
       notifyListeners();
       return MoveResult.backtracked;
     }
@@ -87,6 +115,7 @@ class GameController extends ChangeNotifier {
     }
 
     _path.add(position);
+    _clearHintFeedback();
     notifyListeners();
     return MoveResult.extended;
   }
@@ -97,6 +126,7 @@ class GameController extends ChangeNotifier {
     }
     _usedUndo = true;
     _path.removeLast();
+    _clearHintFeedback();
     notifyListeners();
   }
 
@@ -106,7 +136,55 @@ class GameController extends ChangeNotifier {
     }
     _usedRestart = true;
     _path.clear();
+    _clearHintFeedback();
     notifyListeners();
+  }
+
+  void showHint({int segmentLength = 4}) {
+    if (level.solutionPath.isEmpty) {
+      _clearHintFeedback();
+      notifyListeners();
+      return;
+    }
+
+    final solution = level.solutionPath;
+    final normalizedLength = segmentLength.clamp(2, 8).toInt();
+    final prefix = correctPrefixLength;
+    int start = prefix > 0 ? prefix - 1 : 0;
+
+    if (start >= solution.length - 1) {
+      start = (solution.length - normalizedLength)
+          .clamp(0, solution.length - 1)
+          .toInt();
+    }
+    final end = (start + normalizedLength).clamp(0, solution.length).toInt();
+    _activeHint = solution.sublist(start, end);
+    _hintFeedbackVisible = true;
+    _hintWrongCell = hasRouteError ? _path[correctPrefixLength] : null;
+    _hintExpectedCell = expectedNextCorrectCell;
+    notifyListeners();
+  }
+
+  void _clearHintFeedback() {
+    _activeHint = const [];
+    _hintWrongCell = null;
+    _hintExpectedCell = null;
+    _hintFeedbackVisible = false;
+  }
+
+  int _computeCorrectPrefixLength() {
+    final solution = level.solutionPath;
+    if (solution.isEmpty || _path.isEmpty) {
+      return 0;
+    }
+
+    final max = _path.length < solution.length ? _path.length : solution.length;
+    for (var i = 0; i < max; i++) {
+      if (_path[i] != solution[i]) {
+        return i;
+      }
+    }
+    return max;
   }
 
   Iterable<GridPosition> _neighbors(GridPosition position) {

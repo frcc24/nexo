@@ -57,6 +57,10 @@ class WorldMapController extends ChangeNotifier {
   }
 
   bool isUnlocked(int world, int level) {
+    if (kDebugMode) {
+      return true;
+    }
+
     if (world < _unlockedWorld) {
       return true;
     }
