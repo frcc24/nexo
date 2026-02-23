@@ -90,6 +90,12 @@ class _RulesSheet extends StatelessWidget {
                 title: l10n.t('rule_portals_title'),
                 body: l10n.t('rule_portals_body'),
               ),
+            if (level != null &&
+                level!.mechanics.contains(LevelMechanic.arrows))
+              _RuleSection(
+                title: l10n.t('rule_arrows_title'),
+                body: l10n.t('rule_arrows_body'),
+              ),
           ],
         ),
       ),

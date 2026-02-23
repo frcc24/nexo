@@ -36,6 +36,10 @@ class GameRules {
       return false;
     }
 
+    if (!_respectsForcedDirection(level: level, path: path, next: next)) {
+      return false;
+    }
+
     final fromCell = level.cellAt(last);
     final toCell = level.cellAt(next);
     return isValidTransition(fromCell, toCell);
@@ -75,5 +79,21 @@ class GameRules {
       }
     }
     return true;
+  }
+
+  bool _respectsForcedDirection({
+    required LevelData level,
+    required List<GridPosition> path,
+    required GridPosition next,
+  }) {
+    if (!level.mechanics.contains(LevelMechanic.arrows) || path.isEmpty) {
+      return true;
+    }
+    final last = path.last;
+    final direction = level.forcedDirectionAt(last);
+    if (direction == null) {
+      return true;
+    }
+    return direction.moveFrom(last) == next;
   }
 }

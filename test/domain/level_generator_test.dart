@@ -28,7 +28,7 @@ void main() {
     }
   });
 
-  test('worlds 4, 5 and 6 include expected mechanics', () {
+  test('worlds 4, 5, 6, 7 and 8 include expected mechanics', () {
     final generator = LevelGenerator();
 
     final world4 = generator.generate(
@@ -56,5 +56,25 @@ void main() {
     expect(world6.mechanics.contains(LevelMechanic.portals), isTrue);
     expect(world6.anchors, isNotEmpty);
     expect(world6.portalPairs, isNotEmpty);
+
+    final world7 = generator.generate(
+      worldIndex: 7,
+      levelIndex: 3,
+      difficulty: Difficulty.hard,
+    );
+    expect(world7.mechanics.contains(LevelMechanic.arrows), isTrue);
+    expect(world7.forcedDirections, isNotEmpty);
+
+    final world8 = generator.generate(
+      worldIndex: 8,
+      levelIndex: 3,
+      difficulty: Difficulty.hard,
+    );
+    expect(world8.mechanics.contains(LevelMechanic.anchors), isTrue);
+    expect(world8.mechanics.contains(LevelMechanic.portals), isTrue);
+    expect(world8.mechanics.contains(LevelMechanic.arrows), isTrue);
+    expect(world8.anchors, isNotEmpty);
+    expect(world8.portalPairs, isNotEmpty);
+    expect(world8.forcedDirections, isNotEmpty);
   });
 }

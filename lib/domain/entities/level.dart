@@ -28,6 +28,7 @@ class LevelData {
     this.mechanics = const <LevelMechanic>{},
     this.anchors = const <GridPosition>[],
     this.portalPairs = const <PortalPair>[],
+    this.forcedDirections = const <GridPosition, MoveDirection>{},
   });
 
   final int worldIndex;
@@ -39,6 +40,7 @@ class LevelData {
   final Set<LevelMechanic> mechanics;
   final List<GridPosition> anchors;
   final List<PortalPair> portalPairs;
+  final Map<GridPosition, MoveDirection> forcedDirections;
 
   int get totalCells => difficulty.size * difficulty.size;
 
@@ -57,9 +59,52 @@ class LevelData {
     }
     return null;
   }
+
+  MoveDirection? forcedDirectionAt(GridPosition position) {
+    return forcedDirections[position];
+  }
 }
 
-enum LevelMechanic { anchors, portals }
+enum LevelMechanic { anchors, portals, arrows }
+
+enum MoveDirection {
+  up(deltaRow: -1, deltaCol: 0, symbol: '↑'),
+  down(deltaRow: 1, deltaCol: 0, symbol: '↓'),
+  left(deltaRow: 0, deltaCol: -1, symbol: '←'),
+  right(deltaRow: 0, deltaCol: 1, symbol: '→');
+
+  const MoveDirection({
+    required this.deltaRow,
+    required this.deltaCol,
+    required this.symbol,
+  });
+
+  final int deltaRow;
+  final int deltaCol;
+  final String symbol;
+
+  GridPosition moveFrom(GridPosition position) {
+    return GridPosition(position.row + deltaRow, position.col + deltaCol);
+  }
+
+  static MoveDirection fromStep({
+    required GridPosition from,
+    required GridPosition to,
+  }) {
+    final rowDelta = to.row - from.row;
+    final colDelta = to.col - from.col;
+    if (rowDelta == -1 && colDelta == 0) {
+      return MoveDirection.up;
+    }
+    if (rowDelta == 1 && colDelta == 0) {
+      return MoveDirection.down;
+    }
+    if (rowDelta == 0 && colDelta == -1) {
+      return MoveDirection.left;
+    }
+    return MoveDirection.right;
+  }
+}
 
 class PortalPair {
   const PortalPair({required this.id, required this.a, required this.b});

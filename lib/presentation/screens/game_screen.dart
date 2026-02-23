@@ -503,6 +503,7 @@ class _Board extends StatelessWidget {
               final anchorOrder = controller.level.anchorOrderAt(pos);
               final isLockedAnchor = controller.isAnchorLocked(pos);
               final portalPair = controller.level.portalPairAt(pos);
+              final forcedDirection = controller.level.forcedDirectionAt(pos);
               final t = Curves.easeInOut.transform(hintPulse);
               final hintAlpha = 0.14 + (0.2 * t);
 
@@ -632,6 +633,19 @@ class _Board extends StatelessWidget {
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          if (forcedDirection != null)
+                            Positioned(
+                              right: 6,
+                              bottom: 4,
+                              child: Text(
+                                forcedDirection.symbol,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
                                   color: Colors.white,
                                 ),
                               ),

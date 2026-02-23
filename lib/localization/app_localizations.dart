@@ -92,6 +92,9 @@ class AppLocalizations {
       'rule_portals_title': 'Rule 3: Portals',
       'rule_portals_body':
           'When standing on a portal cell (P1, P2...), you can jump to its pair as your next move.',
+      'rule_arrows_title': 'Rule 4: Direction Arrows',
+      'rule_arrows_body':
+          'When you step on an arrow cell, your next move must follow the arrow direction.',
       'remove_ads': 'Remove ads',
       'remove_ads_for': 'Remove ads for {price}',
       'ads_removed_active': 'Ads are disabled for this app.',
@@ -184,6 +187,9 @@ class AppLocalizations {
       'rule_portals_title': 'Regra 3: Portais',
       'rule_portals_body':
           'Ao estar em uma célula de portal (P1, P2...), você pode saltar para o portal par no próximo movimento.',
+      'rule_arrows_title': 'Regra 4: Setas de Direção',
+      'rule_arrows_body':
+          'Quando você pisa em uma célula com seta, o próximo movimento deve seguir a direção indicada.',
       'remove_ads': 'Remover anúncios',
       'remove_ads_for': 'Remover anúncios por {price}',
       'ads_removed_active': 'Anúncios desativados neste app.',
@@ -279,6 +285,9 @@ class AppLocalizations {
       'rule_portals_title': 'Regla 3: Portales',
       'rule_portals_body':
           'Cuando estés en una celda portal (P1, P2...), puedes saltar al portal par en el siguiente movimiento.',
+      'rule_arrows_title': 'Regla 4: Flechas de Dirección',
+      'rule_arrows_body':
+          'Cuando pisas una celda con flecha, tu siguiente movimiento debe seguir la dirección indicada.',
       'remove_ads': 'Eliminar anuncios',
       'remove_ads_for': 'Eliminar anuncios por {price}',
       'ads_removed_active': 'Los anuncios están desactivados en esta app.',

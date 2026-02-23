@@ -191,5 +191,60 @@ void main() {
         isTrue,
       );
     });
+
+    test('arrow cells force next move direction', () {
+      final level = LevelData(
+        worldIndex: 7,
+        levelIndex: 1,
+        seed: 1,
+        difficulty: Difficulty.easy,
+        grid: const [
+          [
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+          ],
+          [
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+          ],
+          [
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+          ],
+          [
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+          ],
+        ],
+        solutionPath: const [],
+        mechanics: const {LevelMechanic.arrows},
+        forcedDirections: {const GridPosition(1, 1): MoveDirection.right},
+      );
+
+      expect(
+        rules.isValidMove(
+          level: level,
+          path: const [GridPosition(1, 1)],
+          next: const GridPosition(1, 2),
+        ),
+        isTrue,
+      );
+      expect(
+        rules.isValidMove(
+          level: level,
+          path: const [GridPosition(1, 1)],
+          next: const GridPosition(0, 1),
+        ),
+        isFalse,
+      );
+    });
   });
 }

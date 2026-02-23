@@ -173,7 +173,15 @@ class GameController extends ChangeNotifier {
     final portalsScore = level.mechanics.contains(LevelMechanic.portals)
         ? 260
         : 0;
-    return cellsScore + worldScore + levelScore + anchorsScore + portalsScore;
+    final arrowsScore = level.mechanics.contains(LevelMechanic.arrows)
+        ? 240
+        : 0;
+    return cellsScore +
+        worldScore +
+        levelScore +
+        anchorsScore +
+        portalsScore +
+        arrowsScore;
   }
 
   int get expectedSolveSeconds {
@@ -186,7 +194,13 @@ class GameController extends ChangeNotifier {
     final portalsTime = level.mechanics.contains(LevelMechanic.portals)
         ? 35
         : 0;
-    return cellTime + worldTime + levelTime + anchorsTime + portalsTime;
+    final arrowsTime = level.mechanics.contains(LevelMechanic.arrows) ? 30 : 0;
+    return cellTime +
+        worldTime +
+        levelTime +
+        anchorsTime +
+        portalsTime +
+        arrowsTime;
   }
 
   int get score {

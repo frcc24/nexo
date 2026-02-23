@@ -32,6 +32,9 @@ class LevelGenerator {
     final portalPairs = mechanics.contains(LevelMechanic.portals)
         ? _generatePortalPairs(path: path, grid: grid, levelIndex: levelIndex)
         : const <PortalPair>[];
+    final forcedDirections = mechanics.contains(LevelMechanic.arrows)
+        ? _generateForcedDirections(path: path, levelIndex: levelIndex)
+        : const <GridPosition, MoveDirection>{};
 
     return LevelData(
       worldIndex: worldIndex,
@@ -43,6 +46,7 @@ class LevelGenerator {
       mechanics: mechanics,
       anchors: anchors,
       portalPairs: portalPairs,
+      forcedDirections: forcedDirections,
     );
   }
 
@@ -53,8 +57,18 @@ class LevelGenerator {
     if (worldIndex == 5) {
       return {LevelMechanic.portals};
     }
-    if (worldIndex >= 6) {
+    if (worldIndex == 6) {
       return {LevelMechanic.anchors, LevelMechanic.portals};
+    }
+    if (worldIndex == 7) {
+      return {LevelMechanic.arrows};
+    }
+    if (worldIndex >= 8) {
+      return {
+        LevelMechanic.anchors,
+        LevelMechanic.portals,
+        LevelMechanic.arrows,
+      };
     }
     return const <LevelMechanic>{};
   }
@@ -288,5 +302,29 @@ class LevelGenerator {
     }
 
     return pairs;
+  }
+
+  Map<GridPosition, MoveDirection> _generateForcedDirections({
+    required List<GridPosition> path,
+    required int levelIndex,
+  }) {
+    final total = path.length;
+    final count = (2 + ((levelIndex - 1) ~/ 5)).clamp(2, 6);
+    final result = <GridPosition, MoveDirection>{};
+    final used = <GridPosition>{};
+
+    for (var i = 1; i <= count; i++) {
+      final ratio = i / (count + 1);
+      final idx = (ratio * (total - 2)).round().clamp(0, total - 2);
+      final current = path[idx];
+      if (used.contains(current)) {
+        continue;
+      }
+      final next = path[idx + 1];
+      result[current] = MoveDirection.fromStep(from: current, to: next);
+      used.add(current);
+    }
+
+    return result;
   }
 }
