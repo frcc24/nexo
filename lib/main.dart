@@ -86,6 +86,7 @@ class _NexoAppState extends State<NexoApp> {
         SettingsScreen.routeName: (_) => SettingsScreen(
           localeController: _localeController,
           purchaseController: _purchaseController,
+          worldMapController: _worldMapController,
         ),
         WorldMapScreen.routeName: (_) =>
             WorldMapScreen(controller: _worldMapController),

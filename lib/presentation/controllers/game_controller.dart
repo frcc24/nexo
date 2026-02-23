@@ -7,19 +7,27 @@ import '../../domain/services/game_rules.dart';
 enum MoveResult { started, extended, backtracked, ignored, invalid }
 
 class GameController extends ChangeNotifier {
-  GameController({required this.level, GameRules? rules})
-    : _rules = rules ?? GameRules();
+  GameController({
+    required this.level,
+    GameRules? rules,
+    DateTime Function()? now,
+  }) : _rules = rules ?? GameRules(),
+       _now = now ?? DateTime.now;
 
   final LevelData level;
   final GameRules _rules;
+  final DateTime Function() _now;
 
   final List<GridPosition> _path = [];
   List<GridPosition> _activeHint = const [];
   GridPosition? _hintWrongCell;
   GridPosition? _hintExpectedCell;
   bool _hintFeedbackVisible = false;
-  bool _usedUndo = false;
-  bool _usedRestart = false;
+  int _undosUsed = 0;
+  int _restartsUsed = 0;
+  int _hintsUsed = 0;
+  DateTime? _startedAt;
+  DateTime? _completedAt;
 
   List<GridPosition> get path => List.unmodifiable(_path);
   bool get canUndo => _path.length > 1;
@@ -27,8 +35,21 @@ class GameController extends ChangeNotifier {
   int get visitedCount => _path.length;
   int get totalCount => level.totalCells;
   bool get isComplete => _path.length == level.totalCells;
-  bool get usedUndo => _usedUndo;
-  bool get usedRestart => _usedRestart;
+  bool get usedUndo => _undosUsed > 0;
+  bool get usedRestart => _restartsUsed > 0;
+  int get undosUsed => _undosUsed;
+  int get restartsUsed => _restartsUsed;
+  int get hintsUsed => _hintsUsed;
+  Duration get elapsedTime {
+    if (_startedAt == null) {
+      return Duration.zero;
+    }
+    final end = _completedAt ?? _now();
+    final diff = end.difference(_startedAt!);
+    return diff.isNegative ? Duration.zero : diff;
+  }
+
+  int get elapsedSeconds => elapsedTime.inSeconds;
   double get progress => _path.isEmpty ? 0 : _path.length / level.totalCells;
   List<GridPosition> get activeHint => List.unmodifiable(_activeHint);
   bool get hintFeedbackVisible => _hintFeedbackVisible;
@@ -50,6 +71,68 @@ class GameController extends ChangeNotifier {
       return null;
     }
     return solution[nextIndex];
+  }
+
+  int get visitedAnchorsCount {
+    if (!level.mechanics.contains(LevelMechanic.anchors)) {
+      return 0;
+    }
+    var count = 0;
+    for (final anchor in level.anchors) {
+      if (_path.contains(anchor)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  int get totalAnchors => level.anchors.length;
+
+  GridPosition? get nextAnchor {
+    if (!level.mechanics.contains(LevelMechanic.anchors)) {
+      return null;
+    }
+    for (final anchor in level.anchors) {
+      if (!_path.contains(anchor)) {
+        return anchor;
+      }
+    }
+    return null;
+  }
+
+  bool isAnchorLocked(GridPosition position) {
+    if (!level.mechanics.contains(LevelMechanic.anchors)) {
+      return false;
+    }
+    final idx = level.anchors.indexOf(position);
+    if (idx <= 0) {
+      return false;
+    }
+    if (_path.contains(position)) {
+      return false;
+    }
+    for (var i = 0; i < idx; i++) {
+      if (!_path.contains(level.anchors[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  GridPosition? requiredAnchorBefore(GridPosition position) {
+    if (!level.mechanics.contains(LevelMechanic.anchors)) {
+      return null;
+    }
+    final idx = level.anchors.indexOf(position);
+    if (idx <= 0) {
+      return null;
+    }
+    for (var i = 0; i < idx; i++) {
+      if (!_path.contains(level.anchors[i])) {
+        return level.anchors[i];
+      }
+    }
+    return null;
   }
 
   Set<GridPosition> get nextHints {
@@ -80,18 +163,74 @@ class GameController extends ChangeNotifier {
     return hints;
   }
 
+  int get baseComplexityScore {
+    final cellsScore = level.totalCells * 35;
+    final worldScore = level.worldIndex * 120;
+    final levelScore = level.levelIndex * 18;
+    final anchorsScore = level.mechanics.contains(LevelMechanic.anchors)
+        ? 220
+        : 0;
+    final portalsScore = level.mechanics.contains(LevelMechanic.portals)
+        ? 260
+        : 0;
+    return cellsScore + worldScore + levelScore + anchorsScore + portalsScore;
+  }
+
+  int get expectedSolveSeconds {
+    final cellTime = level.totalCells * 5;
+    final worldTime = level.worldIndex * 8;
+    final levelTime = level.levelIndex * 2;
+    final anchorsTime = level.mechanics.contains(LevelMechanic.anchors)
+        ? 25
+        : 0;
+    final portalsTime = level.mechanics.contains(LevelMechanic.portals)
+        ? 35
+        : 0;
+    return cellTime + worldTime + levelTime + anchorsTime + portalsTime;
+  }
+
+  int get score {
+    final base = baseComplexityScore;
+    final elapsed = elapsedSeconds <= 0 ? 1 : elapsedSeconds;
+    final expected = expectedSolveSeconds <= 0 ? 1 : expectedSolveSeconds;
+    final efficiency = (expected / elapsed).clamp(0.35, 1.4);
+    final timePerformance = (base * 0.45 * efficiency).round();
+
+    final hintPenalty = _hintsUsed * (110 + (level.worldIndex * 12));
+    final undoPenalty = _undosUsed * (55 + (level.levelIndex * 2));
+    final restartPenalty = _restartsUsed * 180;
+
+    final raw =
+        base + timePerformance - hintPenalty - undoPenalty - restartPenalty;
+    return raw < 100 ? 100 : raw;
+  }
+
   int get stars {
-    if (_usedRestart) {
-      return 1;
+    final base = baseComplexityScore.toDouble();
+    final scoreValue = score;
+    final target = base + (base * 0.45);
+    final threeStarMin = (target * 0.92).round();
+    final twoStarMin = (target * 0.72).round();
+    if (scoreValue >= threeStarMin) {
+      return 3;
     }
-    if (_usedUndo) {
+    if (scoreValue >= twoStarMin) {
       return 2;
     }
-    return 3;
+    return 1;
   }
 
   MoveResult trySelect(GridPosition position) {
     if (_path.isEmpty) {
+      final validStart = _rules.isValidMove(
+        level: level,
+        path: _path,
+        next: position,
+      );
+      if (!validStart) {
+        return MoveResult.invalid;
+      }
+      _startedAt ??= _now();
       _path.add(position);
       _clearHintFeedback();
       notifyListeners();
@@ -99,7 +238,9 @@ class GameController extends ChangeNotifier {
     }
 
     if (_path.length > 1 && _path[_path.length - 2] == position) {
+      _undosUsed++;
       _path.removeLast();
+      _completedAt = null;
       _clearHintFeedback();
       notifyListeners();
       return MoveResult.backtracked;
@@ -115,6 +256,9 @@ class GameController extends ChangeNotifier {
     }
 
     _path.add(position);
+    if (_path.length == level.totalCells) {
+      _completedAt ??= _now();
+    }
     _clearHintFeedback();
     notifyListeners();
     return MoveResult.extended;
@@ -124,8 +268,9 @@ class GameController extends ChangeNotifier {
     if (!canUndo) {
       return;
     }
-    _usedUndo = true;
+    _undosUsed++;
     _path.removeLast();
+    _completedAt = null;
     _clearHintFeedback();
     notifyListeners();
   }
@@ -134,8 +279,10 @@ class GameController extends ChangeNotifier {
     if (_path.isEmpty) {
       return;
     }
-    _usedRestart = true;
+    _restartsUsed++;
     _path.clear();
+    _startedAt = null;
+    _completedAt = null;
     _clearHintFeedback();
     notifyListeners();
   }
@@ -146,6 +293,7 @@ class GameController extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    _hintsUsed++;
 
     final solution = level.solutionPath;
     final normalizedLength = segmentLength.clamp(2, 8).toInt();

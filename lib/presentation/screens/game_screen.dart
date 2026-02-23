@@ -13,6 +13,7 @@ import '../controllers/purchase_controller.dart';
 import '../controllers/world_map_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/nexo_button.dart';
+import '../widgets/rule_modal.dart';
 import '../widgets/unity_game_banner.dart';
 
 class GameRouteArgs {
@@ -122,6 +123,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               Text(
                 '${l10n.t('stars')}: ${'★' * _controller.stars}${'☆' * (3 - _controller.stars)}',
               ),
+              const SizedBox(height: 8),
+              Text('${l10n.t('score')}: ${_controller.score}'),
+              const SizedBox(height: 6),
+              Text(
+                '${l10n.t('time')}: ${_formatDuration(_controller.elapsedTime)}',
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${l10n.t('hints_used')}: ${_controller.hintsUsed} · '
+                '${l10n.t('undos_used')}: ${_controller.undosUsed} · '
+                '${l10n.t('restarts_used')}: ${_controller.restartsUsed}',
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 12),
               Text(
                 '${l10n.t('path_complete')}: ${_controller.visitedCount}/${_controller.totalCount}',
@@ -147,6 +161,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         );
       },
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   void _openNextLevel() {
@@ -199,6 +219,31 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _handleCellTap(GridPosition position) {
+    if (_controller.isAnchorLocked(position)) {
+      final l10n = context.l10n;
+      final requiredAnchor = _controller.requiredAnchorBefore(position);
+      final currentOrder = _controller.level.anchorOrderAt(position);
+      final requiredOrder = requiredAnchor == null
+          ? null
+          : _controller.level.anchorOrderAt(requiredAnchor);
+      if (requiredOrder != null && currentOrder != null) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.anchorLockedMessage(
+                requiredAnchor: 'A$requiredOrder',
+                currentAnchor: 'A$currentOrder',
+              ),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      _triggerInvalid();
+      return;
+    }
+
     final result = _controller.trySelect(position);
     if (result == MoveResult.invalid) {
       _triggerInvalid();
@@ -217,7 +262,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final title = '${l10n.t('app_title')} · $difficultyLabel';
 
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, title: Text(title)),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text(title),
+        actions: [
+          IconButton(
+            onPressed: () => showRulesModal(context, level: level),
+            icon: const Icon(Icons.menu_book_outlined),
+          ),
+        ],
+      ),
       body: NexoBackground(
         child: SafeArea(
           child: Padding(
@@ -245,6 +299,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+                if (level.mechanics.contains(LevelMechanic.anchors))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.flag_outlined,
+                          size: 16,
+                          color: Color(0xFF53F0CC),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${l10n.t('anchor_progress')}: ${_controller.visitedAnchorsCount}/${_controller.totalAnchors}',
+                          style: const TextStyle(
+                            color: Color(0xFFB9F8EA),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 if (_controller.hintFeedbackVisible &&
                     _controller.hintExpectedCell != null)
                   Padding(
@@ -424,6 +500,9 @@ class _Board extends StatelessWidget {
               final inHintPath = hintPath.contains(pos);
               final isWrong = wrongCell == pos;
               final isExpected = expectedCell == pos;
+              final anchorOrder = controller.level.anchorOrderAt(pos);
+              final isLockedAnchor = controller.isAnchorLocked(pos);
+              final portalPair = controller.level.portalPairAt(pos);
               final t = Curves.easeInOut.transform(hintPulse);
               final hintAlpha = 0.14 + (0.2 * t);
 
@@ -437,7 +516,9 @@ class _Board extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 120),
                     decoration: BoxDecoration(
-                      color: cell.color.color,
+                      color: isLockedAnchor
+                          ? Color.alphaBlend(Colors.black54, cell.color.color)
+                          : cell.color.color,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isWrong
@@ -508,16 +589,64 @@ class _Board extends StatelessWidget {
                             spreadRadius: 1,
                             offset: const Offset(0, 0),
                           ),
+                        if (isLockedAnchor)
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
                       ],
                     ),
                     child: Center(
-                      child: Text(
-                        '${cell.value}',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white.withValues(alpha: 0.97),
-                        ),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Text(
+                              '${cell.value}',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white.withValues(alpha: 0.97),
+                              ),
+                            ),
+                          ),
+                          if (anchorOrder != null)
+                            Positioned(
+                              top: 4,
+                              right: 6,
+                              child: Text(
+                                'A$anchorOrder',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          if (portalPair != null)
+                            Positioned(
+                              left: 6,
+                              bottom: 4,
+                              child: Text(
+                                'P${portalPair.id}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          if (isLockedAnchor)
+                            const Positioned(
+                              left: 6,
+                              top: 4,
+                              child: Icon(
+                                Icons.lock_outline,
+                                size: 12,
+                                color: Colors.white70,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),

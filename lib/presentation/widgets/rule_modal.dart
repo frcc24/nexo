@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/cell_data.dart';
+import '../../domain/entities/level.dart';
 import '../../localization/app_localizations.dart';
 import '../theme/app_theme.dart';
 
-Future<void> showRulesModal(BuildContext context) {
+Future<void> showRulesModal(
+  BuildContext context, {
+  LevelData? level,
+  String? customTitle,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => const _RulesSheet(),
+    builder: (_) => _RulesSheet(level: level, customTitle: customTitle),
   );
 }
 
 class _RulesSheet extends StatelessWidget {
-  const _RulesSheet();
+  const _RulesSheet({this.level, this.customTitle});
+
+  final LevelData? level;
+  final String? customTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +39,7 @@ class _RulesSheet extends StatelessWidget {
           children: [
             Center(
               child: Text(
-                l10n.t('how_to_play'),
+                customTitle ?? l10n.t('how_to_play'),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -70,6 +78,18 @@ class _RulesSheet extends StatelessWidget {
                 isValid: false,
               ),
             ),
+            if (level != null &&
+                level!.mechanics.contains(LevelMechanic.anchors))
+              _RuleSection(
+                title: l10n.t('rule_anchors_title'),
+                body: l10n.t('rule_anchors_body'),
+              ),
+            if (level != null &&
+                level!.mechanics.contains(LevelMechanic.portals))
+              _RuleSection(
+                title: l10n.t('rule_portals_title'),
+                body: l10n.t('rule_portals_body'),
+              ),
           ],
         ),
       ),

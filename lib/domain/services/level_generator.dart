@@ -25,6 +25,13 @@ class LevelGenerator {
       difficulty: difficulty,
       random: random,
     );
+    final mechanics = _mechanicsForWorld(worldIndex);
+    final anchors = mechanics.contains(LevelMechanic.anchors)
+        ? _generateAnchors(path, levelIndex)
+        : const <GridPosition>[];
+    final portalPairs = mechanics.contains(LevelMechanic.portals)
+        ? _generatePortalPairs(path: path, grid: grid, levelIndex: levelIndex)
+        : const <PortalPair>[];
 
     return LevelData(
       worldIndex: worldIndex,
@@ -33,7 +40,20 @@ class LevelGenerator {
       difficulty: difficulty,
       grid: grid,
       solutionPath: path,
+      mechanics: mechanics,
+      anchors: anchors,
+      portalPairs: portalPairs,
     );
+  }
+
+  Set<LevelMechanic> _mechanicsForWorld(int worldIndex) {
+    if (worldIndex == 4) {
+      return {LevelMechanic.anchors};
+    }
+    if (worldIndex >= 5) {
+      return {LevelMechanic.portals};
+    }
+    return const <LevelMechanic>{};
   }
 
   List<GridPosition> _buildHamiltonianPath({
@@ -210,5 +230,60 @@ class LevelGenerator {
     }
 
     return grid;
+  }
+
+  List<GridPosition> _generateAnchors(List<GridPosition> path, int levelIndex) {
+    final total = path.length;
+    final maxAnchors = total >= 36 ? 4 : 3;
+    final count = (2 + ((levelIndex - 1) ~/ 7)).clamp(2, maxAnchors);
+    final result = <GridPosition>[];
+
+    for (var i = 1; i <= count; i++) {
+      final ratio = i / (count + 1);
+      final idx = (ratio * (total - 1)).round().clamp(1, total - 2);
+      result.add(path[idx]);
+    }
+    return result;
+  }
+
+  List<PortalPair> _generatePortalPairs({
+    required List<GridPosition> path,
+    required List<List<CellData>> grid,
+    required int levelIndex,
+  }) {
+    final pairCount = levelIndex >= 12 ? 2 : 1;
+    final pairs = <PortalPair>[];
+    final used = <GridPosition>{};
+
+    final candidates = <(GridPosition, GridPosition)>[];
+    for (var i = 0; i < path.length; i++) {
+      for (var j = i + 2; j < path.length; j++) {
+        final a = path[i];
+        final b = path[j];
+        final valid = _rules.isValidTransition(
+          grid[a.row][a.col],
+          grid[b.row][b.col],
+        );
+        if (valid) {
+          candidates.add((a, b));
+        }
+      }
+    }
+
+    for (final candidate in candidates) {
+      if (pairs.length >= pairCount) {
+        break;
+      }
+      final a = candidate.$1;
+      final b = candidate.$2;
+      if (used.contains(a) || used.contains(b)) {
+        continue;
+      }
+      used.add(a);
+      used.add(b);
+      pairs.add(PortalPair(id: pairs.length + 1, a: a, b: b));
+    }
+
+    return pairs;
   }
 }

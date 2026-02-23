@@ -41,11 +41,17 @@ class AppLocalizations {
       'back': 'Back',
       'world_map': 'World Map',
       'world': 'World',
+      'world_completed': 'Completed world',
       'undo': 'Undo',
       'restart': 'Restart',
       'hint': 'Hint',
       'stage_done': 'Level completed!',
       'stars': 'Stars',
+      'score': 'Score',
+      'time': 'Time',
+      'hints_used': 'Hints used',
+      'undos_used': 'Undos used',
+      'restarts_used': 'Restarts used',
       'path_complete': 'Completed path',
       'next_level': 'Next level',
       'map': 'Map',
@@ -67,6 +73,25 @@ class AppLocalizations {
       'language_en': 'English',
       'language_es': 'Spanish',
       'choose_language': 'Choose app language',
+      'debug_options': 'Debug options',
+      'debug_unlock_all': 'Unlock all levels in debug',
+      'debug_unlock_all_desc': 'Turn off to test real lock/unlock progression.',
+      'unlock_level_title': 'Unlock level',
+      'watch_ad_unlock': 'Watch ad',
+      'locked_level_hint': 'Complete previous levels to unlock this one.',
+      'unlock_with_ad_message':
+          'Watch a rewarded ad to unlock level {level} now?',
+      'unlock_success': 'Level {level} unlocked!',
+      'reward_ad_failed': 'Could not complete rewarded ad. Try again.',
+      'new_rules': 'New Rules',
+      'anchor_progress': 'Anchors',
+      'anchor_locked_message': 'Complete {required} to unlock {current}.',
+      'rule_anchors_title': 'Rule 3: Anchors',
+      'rule_anchors_body':
+          'Special anchor cells must be visited in order: A1, then A2, then A3...',
+      'rule_portals_title': 'Rule 3: Portals',
+      'rule_portals_body':
+          'When standing on a portal cell (P1, P2...), you can jump to its pair as your next move.',
       'remove_ads': 'Remove ads',
       'remove_ads_for': 'Remove ads for {price}',
       'ads_removed_active': 'Ads are disabled for this app.',
@@ -105,11 +130,17 @@ class AppLocalizations {
       'back': 'Voltar',
       'world_map': 'Mapa de Mundos',
       'world': 'Mundo',
+      'world_completed': 'Mundo concluído',
       'undo': 'Desfazer',
       'restart': 'Reiniciar',
       'hint': 'Dica',
       'stage_done': 'Fase concluída!',
       'stars': 'Estrelas',
+      'score': 'Pontuação',
+      'time': 'Tempo',
+      'hints_used': 'Dicas usadas',
+      'undos_used': 'Desfazer usado',
+      'restarts_used': 'Reiniciar usado',
       'path_complete': 'Caminho completo',
       'next_level': 'Próxima fase',
       'map': 'Mapa',
@@ -131,6 +162,28 @@ class AppLocalizations {
       'language_en': 'Inglês',
       'language_es': 'Espanhol',
       'choose_language': 'Escolha o idioma do app',
+      'debug_options': 'Opções de debug',
+      'debug_unlock_all': 'Desbloquear tudo no debug',
+      'debug_unlock_all_desc':
+          'Desative para testar o fluxo real de bloqueio e desbloqueio.',
+      'unlock_level_title': 'Desbloquear fase',
+      'watch_ad_unlock': 'Ver anúncio',
+      'locked_level_hint':
+          'Conclua as fases anteriores para liberar esta fase.',
+      'unlock_with_ad_message':
+          'Assista a um anúncio recompensado para desbloquear a fase {level} agora?',
+      'unlock_success': 'Fase {level} desbloqueada!',
+      'reward_ad_failed':
+          'Não foi possível concluir o anúncio recompensado. Tente novamente.',
+      'new_rules': 'Novas Regras',
+      'anchor_progress': 'Âncoras',
+      'anchor_locked_message': 'Passe por {required} para liberar {current}.',
+      'rule_anchors_title': 'Regra 3: Âncoras',
+      'rule_anchors_body':
+          'Células especiais de âncora devem ser visitadas em ordem: A1, depois A2, depois A3...',
+      'rule_portals_title': 'Regra 3: Portais',
+      'rule_portals_body':
+          'Ao estar em uma célula de portal (P1, P2...), você pode saltar para o portal par no próximo movimento.',
       'remove_ads': 'Remover anúncios',
       'remove_ads_for': 'Remover anúncios por {price}',
       'ads_removed_active': 'Anúncios desativados neste app.',
@@ -171,11 +224,17 @@ class AppLocalizations {
       'back': 'Volver',
       'world_map': 'Mapa de Mundos',
       'world': 'Mundo',
+      'world_completed': 'Mundo completado',
       'undo': 'Deshacer',
       'restart': 'Reiniciar',
       'hint': 'Pista',
       'stage_done': '¡Nivel completado!',
       'stars': 'Estrellas',
+      'score': 'Puntuación',
+      'time': 'Tiempo',
+      'hints_used': 'Pistas usadas',
+      'undos_used': 'Deshacer usado',
+      'restarts_used': 'Reiniciar usado',
       'path_complete': 'Camino completo',
       'next_level': 'Siguiente nivel',
       'map': 'Mapa',
@@ -197,6 +256,29 @@ class AppLocalizations {
       'language_en': 'Inglés',
       'language_es': 'Español',
       'choose_language': 'Elige el idioma de la app',
+      'debug_options': 'Opciones de depuración',
+      'debug_unlock_all': 'Desbloquear todo en depuración',
+      'debug_unlock_all_desc':
+          'Desactiva para probar el flujo real de bloqueo y desbloqueo.',
+      'unlock_level_title': 'Desbloquear nivel',
+      'watch_ad_unlock': 'Ver anuncio',
+      'locked_level_hint':
+          'Completa los niveles anteriores para desbloquear este.',
+      'unlock_with_ad_message':
+          '¿Ver un anuncio recompensado para desbloquear el nivel {level} ahora?',
+      'unlock_success': '¡Nivel {level} desbloqueado!',
+      'reward_ad_failed':
+          'No se pudo completar el anuncio recompensado. Inténtalo de nuevo.',
+      'new_rules': 'Nuevas Reglas',
+      'anchor_progress': 'Anclas',
+      'anchor_locked_message':
+          'Completa {required} para desbloquear {current}.',
+      'rule_anchors_title': 'Regla 3: Anclas',
+      'rule_anchors_body':
+          'Las celdas especiales de ancla deben visitarse en orden: A1, luego A2, luego A3...',
+      'rule_portals_title': 'Regla 3: Portales',
+      'rule_portals_body':
+          'Cuando estés en una celda portal (P1, P2...), puedes saltar al portal par en el siguiente movimiento.',
       'remove_ads': 'Eliminar anuncios',
       'remove_ads_for': 'Eliminar anuncios por {price}',
       'ads_removed_active': 'Los anuncios están desactivados en esta app.',
@@ -237,6 +319,23 @@ class AppLocalizations {
 
   String removeAdsFor({required String price}) {
     return t('remove_ads_for').replaceFirst('{price}', price);
+  }
+
+  String anchorLockedMessage({
+    required String requiredAnchor,
+    required String currentAnchor,
+  }) {
+    return t('anchor_locked_message')
+        .replaceFirst('{required}', requiredAnchor)
+        .replaceFirst('{current}', currentAnchor);
+  }
+
+  String unlockWithAdMessage(int level) {
+    return t('unlock_with_ad_message').replaceFirst('{level}', '$level');
+  }
+
+  String unlockSuccess(int level) {
+    return t('unlock_success').replaceFirst('{level}', '$level');
   }
 }
 

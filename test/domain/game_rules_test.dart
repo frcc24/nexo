@@ -87,5 +87,109 @@ void main() {
         isFalse,
       );
     });
+
+    test('anchors must be visited in order', () {
+      final level = LevelData(
+        worldIndex: 4,
+        levelIndex: 1,
+        seed: 1,
+        difficulty: Difficulty.easy,
+        grid: const [
+          [
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+          ],
+          [
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+          ],
+          [
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+          ],
+          [
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+          ],
+        ],
+        solutionPath: const [],
+        mechanics: const {LevelMechanic.anchors},
+        anchors: const [GridPosition(0, 1), GridPosition(0, 2)],
+      );
+
+      expect(
+        rules.isValidMove(
+          level: level,
+          path: const [GridPosition(0, 0)],
+          next: const GridPosition(0, 2),
+        ),
+        isFalse,
+      );
+      expect(
+        rules.isValidMove(
+          level: level,
+          path: const [GridPosition(0, 0)],
+          next: const GridPosition(0, 1),
+        ),
+        isTrue,
+      );
+    });
+
+    test('portals allow jump to paired cell', () {
+      final level = LevelData(
+        worldIndex: 5,
+        levelIndex: 1,
+        seed: 1,
+        difficulty: Difficulty.easy,
+        grid: const [
+          [
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+          ],
+          [
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+          ],
+          [
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+          ],
+          [
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+            CellData(color: CellColor.red, value: 1),
+            CellData(color: CellColor.blue, value: 1),
+          ],
+        ],
+        solutionPath: const [],
+        mechanics: const {LevelMechanic.portals},
+        portalPairs: const [
+          PortalPair(id: 1, a: GridPosition(0, 1), b: GridPosition(3, 3)),
+        ],
+      );
+
+      expect(
+        rules.isValidMove(
+          level: level,
+          path: const [GridPosition(0, 1)],
+          next: const GridPosition(3, 3),
+        ),
+        isTrue,
+      );
+    });
   });
 }

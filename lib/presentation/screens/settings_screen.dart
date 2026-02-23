@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../localization/app_localizations.dart';
 import '../controllers/locale_controller.dart';
 import '../controllers/purchase_controller.dart';
+import '../controllers/world_map_controller.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -10,12 +12,14 @@ class SettingsScreen extends StatefulWidget {
     super.key,
     required this.localeController,
     required this.purchaseController,
+    required this.worldMapController,
   });
 
   static const routeName = '/settings';
 
   final LocaleController localeController;
   final PurchaseController purchaseController;
+  final WorldMapController worldMapController;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -27,12 +31,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     widget.localeController.addListener(_onLocaleChanged);
     widget.purchaseController.addListener(_onLocaleChanged);
+    widget.worldMapController.addListener(_onLocaleChanged);
   }
 
   @override
   void dispose() {
     widget.localeController.removeListener(_onLocaleChanged);
     widget.purchaseController.removeListener(_onLocaleChanged);
+    widget.worldMapController.removeListener(_onLocaleChanged);
     super.dispose();
   }
 
@@ -164,6 +170,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.t('debug_options'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SwitchListTile(
+                        value: widget.worldMapController.debugUnlockAllEnabled,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(l10n.t('debug_unlock_all')),
+                        subtitle: Text(l10n.t('debug_unlock_all_desc')),
+                        onChanged: (value) {
+                          widget.worldMapController.setDebugUnlockAllEnabled(
+                            value,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),

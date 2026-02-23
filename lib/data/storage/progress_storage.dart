@@ -8,6 +8,8 @@ class ProgressStorage {
   static const _progressKey = 'nexo_progress';
   static const _unlockedWorldKey = 'nexo_unlocked_world';
   static const _unlockedLevelKey = 'nexo_unlocked_level';
+  static const _worldRuleSeenPrefix = 'nexo_world_rule_seen_';
+  static const _debugUnlockAllKey = 'nexo_debug_unlock_all';
 
   Future<List<LevelProgress>> loadProgress() async {
     final prefs = await SharedPreferences.getInstance();
@@ -41,5 +43,25 @@ class ProgressStorage {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_unlockedWorldKey, world);
     await prefs.setInt(_unlockedLevelKey, level);
+  }
+
+  Future<bool> hasSeenWorldRule(int world) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('$_worldRuleSeenPrefix$world') ?? false;
+  }
+
+  Future<void> markWorldRuleSeen(int world) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('$_worldRuleSeenPrefix$world', true);
+  }
+
+  Future<bool> loadDebugUnlockAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_debugUnlockAllKey) ?? true;
+  }
+
+  Future<void> saveDebugUnlockAll(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_debugUnlockAllKey, enabled);
   }
 }

@@ -10,7 +10,7 @@ class WorldMapController extends ChangeNotifier {
     : _storage = storage ?? ProgressStorage(),
       _generator = generator ?? LevelGenerator();
 
-  static const int totalWorlds = 3;
+  static const int totalWorlds = 5;
   static const int levelsPerWorld = 20;
 
   final ProgressStorage _storage;
@@ -21,8 +21,10 @@ class WorldMapController extends ChangeNotifier {
   bool _initialized = false;
   int _unlockedWorld = 1;
   int _unlockedLevel = 1;
+  bool _debugUnlockAllEnabled = true;
 
   bool get initialized => _initialized;
+  bool get debugUnlockAllEnabled => _debugUnlockAllEnabled;
 
   Future<void> init() async {
     if (_initialized) {
@@ -37,6 +39,9 @@ class WorldMapController extends ChangeNotifier {
     final unlocked = await _storage.loadUnlocked();
     _unlockedWorld = unlocked.$1;
     _unlockedLevel = unlocked.$2;
+    if (kDebugMode) {
+      _debugUnlockAllEnabled = await _storage.loadDebugUnlockAll();
+    }
 
     _initialized = true;
     notifyListeners();
@@ -57,10 +62,13 @@ class WorldMapController extends ChangeNotifier {
   }
 
   bool isUnlocked(int world, int level) {
-    if (kDebugMode) {
+    if (kDebugMode && _debugUnlockAllEnabled) {
       return true;
     }
+    return _isUnlockedByProgress(world, level);
+  }
 
+  bool _isUnlockedByProgress(int world, int level) {
     if (world < _unlockedWorld) {
       return true;
     }
@@ -68,6 +76,34 @@ class WorldMapController extends ChangeNotifier {
       return level <= _unlockedLevel;
     }
     return false;
+  }
+
+  bool canUnlockWithReward(int world, int level) {
+    if (_isUnlockedByProgress(world, level)) {
+      return false;
+    }
+    final nextLocked = _nextLevel(_unlockedWorld, _unlockedLevel);
+    return world == nextLocked.$1 && level == nextLocked.$2;
+  }
+
+  Future<bool> unlockWithReward(int world, int level) async {
+    if (!canUnlockWithReward(world, level)) {
+      return false;
+    }
+    _unlockedWorld = world;
+    _unlockedLevel = level;
+    await _storage.saveUnlocked(world: _unlockedWorld, level: _unlockedLevel);
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> setDebugUnlockAllEnabled(bool enabled) async {
+    if (!kDebugMode) {
+      return;
+    }
+    _debugUnlockAllEnabled = enabled;
+    await _storage.saveDebugUnlockAll(enabled);
+    notifyListeners();
   }
 
   int starsFor(int world, int level) {
@@ -107,6 +143,14 @@ class WorldMapController extends ChangeNotifier {
 
     await _storage.saveProgress(_progress.values.toList());
     notifyListeners();
+  }
+
+  Future<bool> shouldShowWorldRuleIntro(int world) async {
+    return !(await _storage.hasSeenWorldRule(world));
+  }
+
+  Future<void> markWorldRuleIntroSeen(int world) async {
+    await _storage.markWorldRuleSeen(world);
   }
 
   (int, int) _nextLevel(int world, int level) {

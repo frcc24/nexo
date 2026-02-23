@@ -27,4 +27,24 @@ void main() {
       );
     }
   });
+
+  test('world 4 includes anchors and world 5 includes portals', () {
+    final generator = LevelGenerator();
+
+    final world4 = generator.generate(
+      worldIndex: 4,
+      levelIndex: 3,
+      difficulty: Difficulty.hard,
+    );
+    expect(world4.mechanics.contains(LevelMechanic.anchors), isTrue);
+    expect(world4.anchors, isNotEmpty);
+
+    final world5 = generator.generate(
+      worldIndex: 5,
+      levelIndex: 3,
+      difficulty: Difficulty.hard,
+    );
+    expect(world5.mechanics.contains(LevelMechanic.portals), isTrue);
+    expect(world5.portalPairs, isNotEmpty);
+  });
 }
