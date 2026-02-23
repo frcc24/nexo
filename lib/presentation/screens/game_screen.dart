@@ -461,7 +461,7 @@ class _Board extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = controller.level.difficulty.size;
+    final size = controller.level.gridSize;
     const spacing = 6.0;
 
     return LayoutBuilder(

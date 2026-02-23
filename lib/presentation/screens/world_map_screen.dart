@@ -57,6 +57,10 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
     return true;
   }
 
+  bool _isWorldUnlocked(int world) {
+    return widget.controller.isUnlocked(world, 1);
+  }
+
   (int world, int level)? _nextPlayableLevel() {
     for (var world = 1; world <= WorldMapController.totalWorlds; world++) {
       for (var level = 1; level <= WorldMapController.levelsPerWorld; level++) {
@@ -78,9 +82,10 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
 
     final next = _nextPlayableLevel();
     for (var world = 1; world <= WorldMapController.totalWorlds; world++) {
+      final unlocked = _isWorldUnlocked(world);
       final completed = _isWorldCompleted(world);
       final containsNext = next != null && next.$1 == world;
-      if (!completed || containsNext) {
+      if (unlocked && (!completed || containsNext)) {
         _expandedWorlds.add(world);
       }
     }
@@ -269,6 +274,7 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
               Difficulty.medium => l10n.t('medium'),
               Difficulty.hard => l10n.t('hard'),
             };
+            final worldUnlocked = _isWorldUnlocked(world);
             final worldCompleted = _isWorldCompleted(world);
 
             return Container(
@@ -283,8 +289,13 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
                 ).copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   key: PageStorageKey('world_$world'),
-                  initiallyExpanded: _expandedWorlds.contains(world),
+                  enabled: worldUnlocked,
+                  initiallyExpanded:
+                      worldUnlocked && _expandedWorlds.contains(world),
                   onExpansionChanged: (expanded) {
+                    if (!worldUnlocked) {
+                      return;
+                    }
                     setState(() {
                       if (expanded) {
                         _expandedWorlds.add(world);
@@ -304,6 +315,11 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
                       ? Text(
                           l10n.t('world_completed'),
                           style: const TextStyle(color: AppTheme.textSecondary),
+                        )
+                      : !worldUnlocked
+                      ? const Text(
+                          '🔒',
+                          style: TextStyle(color: AppTheme.textSecondary),
                         )
                       : null,
                   childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),

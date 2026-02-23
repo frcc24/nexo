@@ -17,11 +17,12 @@ class LevelGenerator {
   }) {
     final seed = worldIndex * 100000 + levelIndex;
     final random = Random(seed);
-    final size = difficulty.size;
+    final size = _gridSizeForWorld(worldIndex, difficulty);
 
     final path = _buildHamiltonianPath(size: size, random: random);
     final grid = _assignCells(
       path: path,
+      size: size,
       difficulty: difficulty,
       random: random,
     );
@@ -47,7 +48,18 @@ class LevelGenerator {
       anchors: anchors,
       portalPairs: portalPairs,
       forcedDirections: forcedDirections,
+      gridSizeOverride: size == difficulty.size ? null : size,
     );
+  }
+
+  int _gridSizeForWorld(int worldIndex, Difficulty difficulty) {
+    if (worldIndex == 9) {
+      return 7;
+    }
+    if (worldIndex >= 10) {
+      return 8;
+    }
+    return difficulty.size;
   }
 
   Set<LevelMechanic> _mechanicsForWorld(int worldIndex) {
@@ -77,6 +89,11 @@ class LevelGenerator {
     required int size,
     required Random random,
   }) {
+    if (size >= 7) {
+      final base = _buildSnakePath(size: size, random: random);
+      return _shufflePathWithBackbite(path: base, random: random);
+    }
+
     final allPositions = List<GridPosition>.generate(
       size * size,
       (index) => GridPosition(index ~/ size, index % size),
@@ -94,6 +111,93 @@ class LevelGenerator {
     }
 
     throw StateError('Nao foi possivel gerar caminho para $size x $size');
+  }
+
+  List<GridPosition> _buildSnakePath({
+    required int size,
+    required Random random,
+  }) {
+    final reverseRows = random.nextBool();
+    final reverseCols = random.nextBool();
+    final path = <GridPosition>[];
+
+    for (var row = 0; row < size; row++) {
+      final actualRow = reverseRows ? (size - 1 - row) : row;
+      final leftToRight = row.isEven;
+      for (var col = 0; col < size; col++) {
+        final baseCol = leftToRight ? col : (size - 1 - col);
+        final actualCol = reverseCols ? (size - 1 - baseCol) : baseCol;
+        path.add(GridPosition(actualRow, actualCol));
+      }
+    }
+    return path;
+  }
+
+  List<GridPosition> _shufflePathWithBackbite({
+    required List<GridPosition> path,
+    required Random random,
+  }) {
+    final working = List<GridPosition>.from(path);
+    final total = working.length;
+    final size = _inferSizeFromPath(working);
+    final iterations = (total * 18) + random.nextInt(total * 6);
+
+    for (var step = 0; step < iterations; step++) {
+      final fromStart = random.nextBool();
+      final endpoint = fromStart ? working.first : working.last;
+      final blocked = fromStart ? working[1] : working[total - 2];
+
+      final neighbors = _neighbors(
+        endpoint,
+        size,
+      ).where((n) => n != blocked).toList();
+      if (neighbors.isEmpty) {
+        continue;
+      }
+
+      final target = neighbors[random.nextInt(neighbors.length)];
+      final idx = working.indexOf(target);
+      if (idx < 0) {
+        continue;
+      }
+      if (fromStart) {
+        if (idx <= 1) {
+          continue;
+        }
+        final reversedPrefix = working.sublist(0, idx).reversed.toList();
+        final suffix = working.sublist(idx);
+        working
+          ..clear()
+          ..addAll(reversedPrefix)
+          ..addAll(suffix);
+      } else {
+        if (idx >= total - 2) {
+          continue;
+        }
+        final prefix = working.sublist(0, idx + 1);
+        final reversedSuffix = working.sublist(idx + 1).reversed.toList();
+        working
+          ..clear()
+          ..addAll(prefix)
+          ..addAll(reversedSuffix);
+      }
+    }
+    return working;
+  }
+
+  int _inferSizeFromPath(List<GridPosition> path) {
+    var maxRow = 0;
+    var maxCol = 0;
+    for (final p in path) {
+      if (p.row > maxRow) {
+        maxRow = p.row;
+      }
+      if (p.col > maxCol) {
+        maxCol = p.col;
+      }
+    }
+    final size = max(maxRow, maxCol) + 1;
+    return size <= 0 ? 1 : size;
   }
 
   bool _searchPath(
@@ -170,10 +274,10 @@ class LevelGenerator {
 
   List<List<CellData>> _assignCells({
     required List<GridPosition> path,
+    required int size,
     required Difficulty difficulty,
     required Random random,
   }) {
-    final size = difficulty.size;
     final grid = List.generate(
       size,
       (_) => List.generate(

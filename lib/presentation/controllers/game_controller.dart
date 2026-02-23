@@ -366,8 +366,8 @@ class GameController extends ChangeNotifier {
           (p) =>
               p.row >= 0 &&
               p.col >= 0 &&
-              p.row < level.difficulty.size &&
-              p.col < level.difficulty.size,
+              p.row < level.gridSize &&
+              p.col < level.gridSize,
         );
   }
 }

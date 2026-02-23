@@ -10,7 +10,7 @@ class WorldMapController extends ChangeNotifier {
     : _storage = storage ?? ProgressStorage(),
       _generator = generator ?? LevelGenerator();
 
-  static const int totalWorlds = 8;
+  static const int totalWorlds = 10;
   static const int levelsPerWorld = 20;
 
   final ProgressStorage _storage;

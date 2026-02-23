@@ -29,6 +29,7 @@ class LevelData {
     this.anchors = const <GridPosition>[],
     this.portalPairs = const <PortalPair>[],
     this.forcedDirections = const <GridPosition, MoveDirection>{},
+    this.gridSizeOverride,
   });
 
   final int worldIndex;
@@ -41,8 +42,11 @@ class LevelData {
   final List<GridPosition> anchors;
   final List<PortalPair> portalPairs;
   final Map<GridPosition, MoveDirection> forcedDirections;
+  final int? gridSizeOverride;
 
-  int get totalCells => difficulty.size * difficulty.size;
+  int get gridSize => gridSizeOverride ?? difficulty.size;
+
+  int get totalCells => gridSize * gridSize;
 
   CellData cellAt(GridPosition position) => grid[position.row][position.col];
 
