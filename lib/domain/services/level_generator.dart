@@ -50,8 +50,11 @@ class LevelGenerator {
     if (worldIndex == 4) {
       return {LevelMechanic.anchors};
     }
-    if (worldIndex >= 5) {
+    if (worldIndex == 5) {
       return {LevelMechanic.portals};
+    }
+    if (worldIndex >= 6) {
+      return {LevelMechanic.anchors, LevelMechanic.portals};
     }
     return const <LevelMechanic>{};
   }
