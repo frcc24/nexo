@@ -5,6 +5,7 @@ import 'data/services/unity_ads_service.dart';
 import 'localization/app_localizations.dart';
 import 'presentation/controllers/locale_controller.dart';
 import 'presentation/controllers/purchase_controller.dart';
+import 'presentation/controllers/retention_controller.dart';
 import 'presentation/controllers/world_map_controller.dart';
 import 'presentation/screens/difficulty_screen.dart';
 import 'presentation/screens/game_screen.dart';
@@ -32,6 +33,7 @@ class _NexoAppState extends State<NexoApp> {
   final WorldMapController _worldMapController = WorldMapController();
   final LocaleController _localeController = LocaleController();
   final PurchaseController _purchaseController = PurchaseController();
+  final RetentionController _retentionController = RetentionController();
 
   @override
   void initState() {
@@ -39,6 +41,7 @@ class _NexoAppState extends State<NexoApp> {
     _localeController.addListener(_onLocaleChanged);
     _localeController.init();
     _purchaseController.init();
+    _retentionController.init();
   }
 
   @override
@@ -79,7 +82,8 @@ class _NexoAppState extends State<NexoApp> {
         return const Locale('en');
       },
       routes: {
-        HomeScreen.routeName: (_) => const HomeScreen(),
+        HomeScreen.routeName: (_) =>
+            HomeScreen(retentionController: _retentionController),
         DifficultyScreen.routeName: (_) => const DifficultyScreen(),
         LegalScreen.routeName: (_) => const LegalScreen(),
         MoreGamesScreen.routeName: (_) => const MoreGamesScreen(),
@@ -95,8 +99,11 @@ class _NexoAppState extends State<NexoApp> {
         if (settings.name == GameScreen.routeName) {
           final args = settings.arguments as GameRouteArgs;
           return MaterialPageRoute(
-            builder: (_) =>
-                GameScreen(args: args, purchaseController: _purchaseController),
+            builder: (_) => GameScreen(
+              args: args,
+              purchaseController: _purchaseController,
+              retentionController: _retentionController,
+            ),
           );
         }
         return null;

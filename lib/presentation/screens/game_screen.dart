@@ -10,6 +10,7 @@ import '../../domain/services/level_generator.dart';
 import '../../localization/app_localizations.dart';
 import '../controllers/game_controller.dart';
 import '../controllers/purchase_controller.dart';
+import '../controllers/retention_controller.dart';
 import '../controllers/world_map_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/nexo_button.dart';
@@ -17,7 +18,11 @@ import '../widgets/rule_modal.dart';
 import '../widgets/unity_game_banner.dart';
 
 class GameRouteArgs {
-  const GameRouteArgs._({required this.level, this.worldMapController});
+  const GameRouteArgs._({
+    required this.level,
+    this.worldMapController,
+    this.isDailyChallenge = false,
+  });
 
   factory GameRouteArgs.quick({required LevelData level}) =>
       GameRouteArgs._(level: level);
@@ -27,8 +32,12 @@ class GameRouteArgs {
     required WorldMapController worldMapController,
   }) => GameRouteArgs._(level: level, worldMapController: worldMapController);
 
+  factory GameRouteArgs.dailyChallenge({required LevelData level}) =>
+      GameRouteArgs._(level: level, isDailyChallenge: true);
+
   final LevelData level;
   final WorldMapController? worldMapController;
+  final bool isDailyChallenge;
 
   bool get hasProgression => worldMapController != null;
 }
@@ -38,12 +47,14 @@ class GameScreen extends StatefulWidget {
     super.key,
     required this.args,
     required this.purchaseController,
+    required this.retentionController,
   });
 
   static const routeName = '/game';
 
   final GameRouteArgs args;
   final PurchaseController purchaseController;
+  final RetentionController retentionController;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -101,6 +112,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   Future<void> _handleWin() async {
     final l10n = context.l10n;
+    final newAchievements = await widget.retentionController
+        .recordLevelCompleted(
+          level: _controller.level,
+          stars: _controller.stars,
+          score: _controller.score,
+          hintsUsed: _controller.hintsUsed,
+          isDailyChallenge: widget.args.isDailyChallenge,
+        );
     if (widget.args.hasProgression) {
       await widget.args.worldMapController!.completeLevel(
         level: _controller.level,
@@ -140,6 +159,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               Text(
                 '${l10n.t('path_complete')}: ${_controller.visitedCount}/${_controller.totalCount}',
               ),
+              if (newAchievements > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  l10n.newAchievementsUnlocked(newAchievements),
+                  style: const TextStyle(color: Color(0xFFF6D04D)),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
           actions: [
