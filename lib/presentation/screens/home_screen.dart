@@ -5,6 +5,8 @@ import '../controllers/retention_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/nexo_button.dart';
 import '../widgets/rule_modal.dart';
+import 'achievements_screen.dart';
+import 'daily_missions_screen.dart';
 import 'game_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -46,81 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _showMissions() async {
-    final l10n = context.l10n;
-    final missions = widget.retentionController.dailyMissions;
-    final bestScore = widget.retentionController.dailyBestScore;
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(l10n.t('daily_missions')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final mission in missions)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  '${mission.completed ? '✅' : '▫️'} ${l10n.t(mission.titleKey)} '
-                  '(${mission.progress}/${mission.target})',
-                ),
-              ),
-            if (bestScore != null) ...[
-              const SizedBox(height: 8),
-              Text('${l10n.t('best_score_today')}: $bestScore'),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.t('back')),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _showAchievements() async {
-    final l10n = context.l10n;
-    final achievements = widget.retentionController.achievements;
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(l10n.t('achievements')),
-        content: SizedBox(
-          width: 360,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              for (final ach in achievements)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    '${ach.unlocked ? '🏆' : '🔒'} ${l10n.t(ach.titleKey)}\n'
-                    '${l10n.t(ach.descKey)}',
-                  ),
-                ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.t('back')),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final retention = widget.retentionController;
 
     return Scaffold(
       body: NexoBackground(
@@ -164,18 +94,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             label: l10n.t('daily_missions'),
                             icon: Icons.task_alt_outlined,
                             primary: false,
-                            onPressed: _showMissions,
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              DailyMissionsScreen.routeName,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: NexoButton(
-                            label:
-                                '${l10n.t('achievements')} '
-                                '(${retention.unlockedAchievementsCount}/${retention.totalAchievementsCount})',
+                            label: l10n.t('achievements'),
                             icon: Icons.workspace_premium_outlined,
                             primary: false,
-                            onPressed: _showAchievements,
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              AchievementsScreen.routeName,
+                            ),
                           ),
                         ),
                       ],

@@ -9,6 +9,8 @@ import 'presentation/controllers/retention_controller.dart';
 import 'presentation/controllers/world_map_controller.dart';
 import 'presentation/screens/difficulty_screen.dart';
 import 'presentation/screens/game_screen.dart';
+import 'presentation/screens/achievements_screen.dart';
+import 'presentation/screens/daily_missions_screen.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/legal_screen.dart';
 import 'presentation/screens/more_games_screen.dart';
@@ -87,6 +89,10 @@ class _NexoAppState extends State<NexoApp> {
         DifficultyScreen.routeName: (_) => const DifficultyScreen(),
         LegalScreen.routeName: (_) => const LegalScreen(),
         MoreGamesScreen.routeName: (_) => const MoreGamesScreen(),
+        AchievementsScreen.routeName: (_) =>
+            AchievementsScreen(retentionController: _retentionController),
+        DailyMissionsScreen.routeName: (_) =>
+            DailyMissionsScreen(retentionController: _retentionController),
         SettingsScreen.routeName: (_) => SettingsScreen(
           localeController: _localeController,
           purchaseController: _purchaseController,

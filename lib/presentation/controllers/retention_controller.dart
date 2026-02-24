@@ -55,14 +55,20 @@ class AchievementProgress {
     required this.id,
     required this.titleKey,
     required this.descKey,
+    required this.category,
+    required this.iconKey,
     required this.unlocked,
   });
 
   final String id;
   final String titleKey;
   final String descKey;
+  final AchievementCategory category;
+  final String iconKey;
   final bool unlocked;
 }
+
+enum AchievementCategory { progress, mastery, daily }
 
 class _PlayerStats {
   const _PlayerStats({
@@ -125,12 +131,16 @@ class _AchievementDef {
     required this.id,
     required this.titleKey,
     required this.descKey,
+    required this.category,
+    required this.iconKey,
     required this.check,
   });
 
   final String id;
   final String titleKey;
   final String descKey;
+  final AchievementCategory category;
+  final String iconKey;
   final bool Function(_PlayerStats stats) check;
 }
 
@@ -165,37 +175,161 @@ class RetentionController extends ChangeNotifier {
       id: 'first_win',
       titleKey: 'ach_first_win_title',
       descKey: 'ach_first_win_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'rocket',
       check: (s) => s.totalWins >= 1,
+    ),
+    _AchievementDef(
+      id: 'wins_5',
+      titleKey: 'ach_wins_5_title',
+      descKey: 'ach_wins_5_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'medal',
+      check: (s) => s.totalWins >= 5,
     ),
     _AchievementDef(
       id: 'wins_20',
       titleKey: 'ach_wins_20_title',
       descKey: 'ach_wins_20_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'target',
       check: (s) => s.totalWins >= 20,
+    ),
+    _AchievementDef(
+      id: 'wins_50',
+      titleKey: 'ach_wins_50_title',
+      descKey: 'ach_wins_50_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'trophy',
+      check: (s) => s.totalWins >= 50,
     ),
     _AchievementDef(
       id: 'wins_100',
       titleKey: 'ach_wins_100_title',
       descKey: 'ach_wins_100_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'crown',
       check: (s) => s.totalWins >= 100,
+    ),
+    _AchievementDef(
+      id: 'wins_150',
+      titleKey: 'ach_wins_150_title',
+      descKey: 'ach_wins_150_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'diamond',
+      check: (s) => s.totalWins >= 150,
+    ),
+    _AchievementDef(
+      id: 'stars_50',
+      titleKey: 'ach_stars_50_title',
+      descKey: 'ach_stars_50_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'spark',
+      check: (s) => s.totalStars >= 50,
     ),
     _AchievementDef(
       id: 'stars_200',
       titleKey: 'ach_stars_200_title',
       descKey: 'ach_stars_200_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'stars',
       check: (s) => s.totalStars >= 200,
+    ),
+    _AchievementDef(
+      id: 'stars_500',
+      titleKey: 'ach_stars_500_title',
+      descKey: 'ach_stars_500_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'gem',
+      check: (s) => s.totalStars >= 500,
+    ),
+    _AchievementDef(
+      id: 'stars_1000',
+      titleKey: 'ach_stars_1000_title',
+      descKey: 'ach_stars_1000_desc',
+      category: AchievementCategory.progress,
+      iconKey: 'galaxy',
+      check: (s) => s.totalStars >= 1000,
+    ),
+    _AchievementDef(
+      id: 'no_hint_5',
+      titleKey: 'ach_no_hint_5_title',
+      descKey: 'ach_no_hint_5_desc',
+      category: AchievementCategory.mastery,
+      iconKey: 'shield',
+      check: (s) => s.noHintWins >= 5,
     ),
     _AchievementDef(
       id: 'no_hint_25',
       titleKey: 'ach_no_hint_25_title',
       descKey: 'ach_no_hint_25_desc',
+      category: AchievementCategory.mastery,
+      iconKey: 'brain',
       check: (s) => s.noHintWins >= 25,
+    ),
+    _AchievementDef(
+      id: 'no_hint_50',
+      titleKey: 'ach_no_hint_50_title',
+      descKey: 'ach_no_hint_50_desc',
+      category: AchievementCategory.mastery,
+      iconKey: 'focus',
+      check: (s) => s.noHintWins >= 50,
+    ),
+    _AchievementDef(
+      id: 'no_hint_100',
+      titleKey: 'ach_no_hint_100_title',
+      descKey: 'ach_no_hint_100_desc',
+      category: AchievementCategory.mastery,
+      iconKey: 'mastermind',
+      check: (s) => s.noHintWins >= 100,
+    ),
+    _AchievementDef(
+      id: 'daily_3',
+      titleKey: 'ach_daily_3_title',
+      descKey: 'ach_daily_3_desc',
+      category: AchievementCategory.daily,
+      iconKey: 'calendar',
+      check: (s) => s.dailyChallengesCompleted >= 3,
     ),
     _AchievementDef(
       id: 'daily_7',
       titleKey: 'ach_daily_7_title',
       descKey: 'ach_daily_7_desc',
+      category: AchievementCategory.daily,
+      iconKey: 'calendar',
       check: (s) => s.dailyChallengesCompleted >= 7,
+    ),
+    _AchievementDef(
+      id: 'daily_14',
+      titleKey: 'ach_daily_14_title',
+      descKey: 'ach_daily_14_desc',
+      category: AchievementCategory.daily,
+      iconKey: 'calendar_fire',
+      check: (s) => s.dailyChallengesCompleted >= 14,
+    ),
+    _AchievementDef(
+      id: 'daily_30',
+      titleKey: 'ach_daily_30_title',
+      descKey: 'ach_daily_30_desc',
+      category: AchievementCategory.daily,
+      iconKey: 'calendar_star',
+      check: (s) => s.dailyChallengesCompleted >= 30,
+    ),
+    _AchievementDef(
+      id: 'daily_60',
+      titleKey: 'ach_daily_60_title',
+      descKey: 'ach_daily_60_desc',
+      category: AchievementCategory.daily,
+      iconKey: 'calendar_bolt',
+      check: (s) => s.dailyChallengesCompleted >= 60,
+    ),
+    _AchievementDef(
+      id: 'daily_100',
+      titleKey: 'ach_daily_100_title',
+      descKey: 'ach_daily_100_desc',
+      category: AchievementCategory.daily,
+      iconKey: 'calendar_crown',
+      check: (s) => s.dailyChallengesCompleted >= 100,
     ),
   ];
 
@@ -213,6 +347,8 @@ class RetentionController extends ChangeNotifier {
             id: a.id,
             titleKey: a.titleKey,
             descKey: a.descKey,
+            category: a.category,
+            iconKey: a.iconKey,
             unlocked: _unlocked.contains(a.id),
           ),
         )
