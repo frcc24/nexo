@@ -38,5 +38,25 @@ void main() {
       controller.achievements.any((a) => a.id == 'first_win' && a.unlocked),
       isTrue,
     );
+
+    final missionsAfterFirst = controller.dailyMissions
+        .map((m) => (m.id, m.progress))
+        .toList();
+    final bestAfterFirst = controller.dailyBestScore;
+
+    final secondUnlockedCount = await controller.recordLevelCompleted(
+      level: level,
+      stars: 3,
+      score: 2000,
+      hintsUsed: 0,
+      isDailyChallenge: true,
+    );
+
+    expect(secondUnlockedCount, 0);
+    expect(controller.dailyBestScore, bestAfterFirst);
+    final missionsAfterSecond = controller.dailyMissions
+        .map((m) => (m.id, m.progress))
+        .toList();
+    expect(missionsAfterSecond, missionsAfterFirst);
   });
 }

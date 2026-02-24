@@ -37,6 +37,13 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
   }
 
   void _openDailyChallenge() {
+    if (!widget.retentionController.canPlayDailyChallenge) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.t('daily_challenge_done_today'))),
+      );
+      return;
+    }
     final level = widget.retentionController.buildDailyChallengeLevel();
     Navigator.pushNamed(
       context,
@@ -51,6 +58,7 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
     final missions = widget.retentionController.dailyMissions;
     final completed = missions.where((m) => m.completed).length;
     final total = missions.length;
+    final coins = widget.retentionController.coins;
 
     return Scaffold(
       appBar: AppBar(
@@ -96,6 +104,25 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
                             color: Colors.white,
                           ),
                         ),
+                      ),
+                      const SizedBox(width: 10),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.monetization_on_rounded,
+                            size: 18,
+                            color: Color(0xFFFFD54F),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$coins',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -195,6 +222,17 @@ class _MissionCard extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.82),
                     fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '+${mission.rewardCoins} ${l10n.t('coins')}',
+                  style: TextStyle(
+                    color: mission.rewardClaimed
+                        ? const Color(0xFF53F0CC)
+                        : const Color(0xFFFFD54F),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),

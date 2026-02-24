@@ -98,8 +98,10 @@ class _NexoAppState extends State<NexoApp> {
           purchaseController: _purchaseController,
           worldMapController: _worldMapController,
         ),
-        WorldMapScreen.routeName: (_) =>
-            WorldMapScreen(controller: _worldMapController),
+        WorldMapScreen.routeName: (_) => WorldMapScreen(
+          controller: _worldMapController,
+          retentionController: _retentionController,
+        ),
       },
       onGenerateRoute: (settings) {
         if (settings.name == GameScreen.routeName) {

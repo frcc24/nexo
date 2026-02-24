@@ -3,17 +3,23 @@ import 'package:flutter/material.dart';
 import '../../data/services/unity_ads_service.dart';
 import '../../domain/entities/level.dart';
 import '../../localization/app_localizations.dart';
+import '../controllers/retention_controller.dart';
 import '../controllers/world_map_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/rule_modal.dart';
 import 'game_screen.dart';
 
 class WorldMapScreen extends StatefulWidget {
-  const WorldMapScreen({super.key, required this.controller});
+  const WorldMapScreen({
+    super.key,
+    required this.controller,
+    required this.retentionController,
+  });
 
   static const routeName = '/world-map';
 
   final WorldMapController controller;
+  final RetentionController retentionController;
 
   @override
   State<WorldMapScreen> createState() => _WorldMapScreenState();
@@ -33,11 +39,13 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
     super.initState();
     widget.controller.init();
     widget.controller.addListener(_onUpdated);
+    widget.retentionController.addListener(_onUpdated);
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_onUpdated);
+    widget.retentionController.removeListener(_onUpdated);
     _scrollController.dispose();
     super.dispose();
   }
@@ -178,19 +186,33 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
       return;
     }
 
-    final confirm = await showDialog<bool>(
+    final cost = widget.retentionController.coinCostForLevel(
+      world: world,
+      level: level,
+    );
+    final hasCoins = widget.retentionController.coins >= cost;
+
+    final choice = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surface,
         title: Text(l10n.t('unlock_level_title')),
-        content: Text(l10n.unlockWithAdMessage(level)),
+        content: Text(
+          '${l10n.unlockWithAdMessage(level)}\n\n'
+          '${l10n.t('unlock_with_coins')}: $cost (${l10n.t('coins')}: ${widget.retentionController.coins})',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(context, 'cancel'),
             child: Text(l10n.t('back')),
           ),
           FilledButton.icon(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: hasCoins ? () => Navigator.pop(context, 'coins') : null,
+            icon: const Icon(Icons.monetization_on_outlined),
+            label: Text(l10n.t('unlock_with_coins')),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(context, 'ad'),
             icon: const Icon(Icons.ondemand_video),
             label: Text(l10n.t('watch_ad_unlock')),
           ),
@@ -198,7 +220,32 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
       ),
     );
 
-    if (confirm != true || !mounted) {
+    if (!mounted || choice == null || choice == 'cancel') {
+      return;
+    }
+
+    if (choice == 'coins') {
+      final paid = await widget.retentionController.spendCoins(cost);
+      if (!paid) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.t('not_enough_coins'))));
+        return;
+      }
+      final unlocked = await widget.controller.unlockWithReward(world, level);
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            unlocked ? l10n.unlockSuccess(level) : l10n.t('reward_ad_failed'),
+          ),
+        ),
+      );
       return;
     }
 
@@ -254,6 +301,32 @@ class _WorldMapScreenState extends State<WorldMapScreen> {
         backgroundColor: Colors.transparent,
         title: Text(context.l10n.t('world_map')),
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceSoft.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.monetization_on_rounded,
+                      size: 16,
+                      color: Color(0xFFFFD54F),
+                    ),
+                    const SizedBox(width: 4),
+                    Text('${widget.retentionController.coins}'),
+                  ],
+                ),
+              ),
+            ),
+          ),
           IconButton(
             onPressed: () => Navigator.pushNamed(context, '/difficulty'),
             icon: const Icon(Icons.tune),

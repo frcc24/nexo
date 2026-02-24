@@ -120,6 +120,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           hintsUsed: _controller.hintsUsed,
           isDailyChallenge: widget.args.isDailyChallenge,
         );
+    final earnedCoins = widget.retentionController.lastCoinsEarned;
     if (widget.args.hasProgression) {
       await widget.args.worldMapController!.completeLevel(
         level: _controller.level,
@@ -167,6 +168,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   textAlign: TextAlign.center,
                 ),
               ],
+              if (earnedCoins > 0) ...[
+                const SizedBox(height: 6),
+                Text(
+                  '+$earnedCoins ${l10n.t('coins')}',
+                  style: const TextStyle(color: Color(0xFFFFD54F)),
+                ),
+              ],
             ],
           ),
           actions: [
@@ -175,15 +183,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: Text(l10n.t('map')),
+              child: Text(
+                widget.args.isDailyChallenge ? l10n.t('home') : l10n.t('map'),
+              ),
             ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _openNextLevel();
-              },
-              child: Text(l10n.t('next_level')),
-            ),
+            if (!widget.args.isDailyChallenge)
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _openNextLevel();
+                },
+                child: Text(l10n.t('next_level')),
+              ),
           ],
         );
       },

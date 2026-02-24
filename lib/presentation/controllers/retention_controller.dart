@@ -13,21 +13,27 @@ class DailyMission {
     required this.titleKey,
     required this.target,
     required this.progress,
+    required this.rewardCoins,
+    required this.rewardClaimed,
   });
 
   final String id;
   final String titleKey;
   final int target;
   final int progress;
+  final int rewardCoins;
+  final bool rewardClaimed;
 
   bool get completed => progress >= target;
 
-  DailyMission copyWith({int? progress}) {
+  DailyMission copyWith({int? progress, bool? rewardClaimed}) {
     return DailyMission(
       id: id,
       titleKey: titleKey,
       target: target,
       progress: progress ?? this.progress,
+      rewardCoins: rewardCoins,
+      rewardClaimed: rewardClaimed ?? this.rewardClaimed,
     );
   }
 
@@ -37,6 +43,8 @@ class DailyMission {
       'titleKey': titleKey,
       'target': target,
       'progress': progress,
+      'rewardCoins': rewardCoins,
+      'rewardClaimed': rewardClaimed,
     };
   }
 
@@ -46,6 +54,8 @@ class DailyMission {
       titleKey: json['titleKey'] as String? ?? 'mission_complete_levels',
       target: (json['target'] as num?)?.toInt() ?? 1,
       progress: (json['progress'] as num?)?.toInt() ?? 0,
+      rewardCoins: (json['rewardCoins'] as num?)?.toInt() ?? 40,
+      rewardClaimed: json['rewardClaimed'] == true,
     );
   }
 }
@@ -162,6 +172,8 @@ class RetentionController extends ChangeNotifier {
   List<DailyMission> _dailyMissions = const [];
   int? _dailyBestScore;
   bool _dailyCompleted = false;
+  int _coins = 0;
+  int _lastCoinsEarned = 0;
   _PlayerStats _stats = const _PlayerStats(
     totalWins: 0,
     totalStars: 0,
@@ -337,6 +349,9 @@ class RetentionController extends ChangeNotifier {
   List<DailyMission> get dailyMissions => List.unmodifiable(_dailyMissions);
   int? get dailyBestScore => _dailyBestScore;
   bool get dailyCompleted => _dailyCompleted;
+  bool get canPlayDailyChallenge => !_dailyCompleted;
+  int get coins => _coins;
+  int get lastCoinsEarned => _lastCoinsEarned;
   int get unlockedAchievementsCount => _unlocked.length;
   int get totalAchievementsCount => _achievementDefs.length;
 
@@ -362,6 +377,7 @@ class RetentionController extends ChangeNotifier {
     final today = _dateKey(_now());
     final raw = await _storage.loadState();
     _stats = _PlayerStats.fromJson(raw?['stats'] as Map<String, dynamic>?);
+    _coins = (raw?['coins'] as num?)?.toInt() ?? 0;
     _unlocked = ((raw?['unlocked'] as List<dynamic>?) ?? const [])
         .map((e) => e.toString())
         .toSet();
@@ -412,17 +428,25 @@ class RetentionController extends ChangeNotifier {
       await init();
     }
 
+    if (isDailyChallenge && _dailyCompleted) {
+      _lastCoinsEarned = 0;
+      return 0;
+    }
+
     _stats = _stats.copyWith(
       totalWins: _stats.totalWins + 1,
       totalStars: _stats.totalStars + stars,
       noHintWins: _stats.noHintWins + (hintsUsed == 0 ? 1 : 0),
     );
 
-    _incrementMission('complete_levels', 1);
-    _incrementMission('collect_stars', stars);
+    var coinsEarned = 0;
+    coinsEarned += _incrementMission('complete_levels', 1);
+    coinsEarned += _incrementMission('collect_stars', stars);
     if (hintsUsed == 0) {
-      _incrementMission('no_hint_wins', 1);
+      coinsEarned += _incrementMission('no_hint_wins', 1);
     }
+    _coins += coinsEarned;
+    _lastCoinsEarned = coinsEarned;
 
     if (isDailyChallenge) {
       final wasCompleted = _dailyCompleted;
@@ -449,6 +473,23 @@ class RetentionController extends ChangeNotifier {
     return Difficulty.hard;
   }
 
+  int coinCostForLevel({required int world, required int level}) {
+    return 60 + (world * 12) + (level * 2);
+  }
+
+  Future<bool> spendCoins(int amount) async {
+    if (amount <= 0) {
+      return true;
+    }
+    if (_coins < amount) {
+      return false;
+    }
+    _coins -= amount;
+    await _persist();
+    notifyListeners();
+    return true;
+  }
+
   List<DailyMission> _buildDailyMissions(String dateKey) {
     final random = Random(dateKey.hashCode);
     return [
@@ -457,32 +498,45 @@ class RetentionController extends ChangeNotifier {
         titleKey: 'mission_complete_levels',
         target: 3 + random.nextInt(3), // 3-5
         progress: 0,
+        rewardCoins: 40 + random.nextInt(16),
+        rewardClaimed: false,
       ),
       DailyMission(
         id: 'no_hint_wins',
         titleKey: 'mission_no_hint_wins',
         target: 1 + random.nextInt(2), // 1-2
         progress: 0,
+        rewardCoins: 50 + random.nextInt(16),
+        rewardClaimed: false,
       ),
       DailyMission(
         id: 'collect_stars',
         titleKey: 'mission_collect_stars',
         target: 6 + random.nextInt(5), // 6-10
         progress: 0,
+        rewardCoins: 45 + random.nextInt(16),
+        rewardClaimed: false,
       ),
     ];
   }
 
-  void _incrementMission(String missionId, int amount) {
+  int _incrementMission(String missionId, int amount) {
+    var earned = 0;
     _dailyMissions = _dailyMissions.map((mission) {
       if (mission.id != missionId || mission.completed) {
         return mission;
       }
       final next = mission.progress + amount;
-      return mission.copyWith(
+      final updated = mission.copyWith(
         progress: next > mission.target ? mission.target : next,
       );
+      if (!mission.rewardClaimed && updated.completed) {
+        earned += mission.rewardCoins;
+        return updated.copyWith(rewardClaimed: true);
+      }
+      return updated;
     }).toList();
+    return earned;
   }
 
   int _unlockNewAchievements() {
@@ -505,6 +559,7 @@ class RetentionController extends ChangeNotifier {
       'dailyMissions': _dailyMissions.map((m) => m.toJson()).toList(),
       'dailyBestScore': _dailyBestScore,
       'dailyCompleted': _dailyCompleted,
+      'coins': _coins,
       'stats': _stats.toJson(),
       'unlocked': _unlocked.toList(),
     });

@@ -40,6 +40,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openDailyChallenge() {
+    if (!widget.retentionController.canPlayDailyChallenge) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.t('daily_challenge_done_today'))),
+      );
+      return;
+    }
     final level = widget.retentionController.buildDailyChallengeLevel();
     Navigator.pushNamed(
       context,
@@ -51,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final coins = widget.retentionController.coins;
 
     return Scaffold(
       body: NexoBackground(
@@ -64,10 +72,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Align(
                       alignment: Alignment.centerRight,
-                      child: IconButton(
-                        onPressed: () =>
-                            Navigator.pushNamed(context, '/settings'),
-                        icon: const Icon(Icons.settings_outlined),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceSoft.withValues(
+                                alpha: 0.9,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.monetization_on_rounded,
+                                  size: 16,
+                                  color: Color(0xFFFFD54F),
+                                ),
+                                const SizedBox(width: 4),
+                                Text('$coins'),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/settings'),
+                            icon: const Icon(Icons.settings_outlined),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 12),
